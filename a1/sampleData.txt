@@ -1,0 +1,12 @@
+<DOC>
+<TEST>
+<DOCNO> LA010190-0001 </DOCNO>
+<DOCID> 156144 </DOCID>
+<DATE>
+<Text align="left" id="10">
+<P>
+January 1, 1990, Monday, Home Edition 
+</P>
+</Text>
+</DOC>
+<TEST> TEST TESTTTTESTETSTE TESTING </TEST>
