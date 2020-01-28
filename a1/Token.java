@@ -9,6 +9,7 @@ class Token {
     public final static int CLOSE = 6;
     public final static int PUNCTUATION = 7;
     public final static int NL = 8;
+    public final static int ERROR_CLOSE = 9;
 
     public int m_type;
     public String m_value;
@@ -25,14 +26,23 @@ class Token {
     public String toString() {
         switch (m_type) {
         case WORD:
+            return("WORD("+m_value+")");
         case NUMBER:
+            return("Number("+m_value+")");
         case APOSTROPHIZED:
+            return("APOSTROPHIZED("+m_value+")");
         case HYPHENATED:
+            return("HYPHENATED("+m_value+")");
         case OPEN:
+            return("OPEN-"+m_value);
         case CLOSE:
-        case NL:
+            return("CLOSE-"+m_value);
         case PUNCTUATION:
+            return("PUNCTUATION("+m_value+")");
+        case NL:
             return m_value;
+        case ERROR_CLOSE:
+            return "ERROR("+m_value+")";
         default:
             return "UNKNOWN(" + m_value + ")";
         }
