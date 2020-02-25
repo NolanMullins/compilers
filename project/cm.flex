@@ -96,29 +96,32 @@ identifier = {letter}+
    code, that will be executed when the scanner matches the associated
    regular expression. */
    
+// basically:
+// open (not *) or not(close) close (but allow multiple ***.../)
 "/*"([^*]|([*][^\/]))*[*]+\/   { /* skip comments */ }
-"if"               { return symbol(sym.IF); }
-"{"             { return symbol(sym.THEN); }
-"else"             { return symbol(sym.ELSE); }
-"}"              { return symbol(sym.END); }
-"while"           { return symbol(sym.REPEAT); }
-"read"             { return symbol(sym.READ); }
-"write"            { return symbol(sym.WRITE); }
-"="               { return symbol(sym.ASSIGN); }
+
+"if"                { return symbol(sym.IF); }
+"{"                 { return symbol(sym.THEN); }
+"else"              { return symbol(sym.ELSE); }
+"}"                 { return symbol(sym.END); }
+"while"             { return symbol(sym.REPEAT); }
+"read"              { return symbol(sym.READ); }
+"write"             { return symbol(sym.WRITE); }
+"="                 { return symbol(sym.ASSIGN); }
 "=="                { return symbol(sym.EQ); }
-"<"                { return symbol(sym.LT); }
-">"                { return symbol(sym.GT); }
-"+"                { return symbol(sym.PLUS); }
-"-"                { return symbol(sym.MINUS); }
-"*"                { return symbol(sym.TIMES); }
-"/"                { return symbol(sym.OVER); }
-"("                { return symbol(sym.LPAREN); }
-")"                { return symbol(sym.RPAREN); }
-";"                { return symbol(sym.SEMI); }
-{number}           { return symbol(sym.NUM, yytext()); }
-{identifier}       { return symbol(sym.ID, yytext()); }
-{WhiteSpace}+      { /* skip whitespace */ }   
-.                  { 
-                    System.out.println("Unknown: "+yytext());
-                    return symbol(sym.ERROR);
-                   }
+"<"                 { return symbol(sym.LT); }
+">"                 { return symbol(sym.GT); }
+"+"                 { return symbol(sym.PLUS); }
+"-"                 { return symbol(sym.MINUS); }
+"*"                 { return symbol(sym.TIMES); }
+"/"                 { return symbol(sym.OVER); }
+"("                 { return symbol(sym.LPAREN); }
+")"                 { return symbol(sym.RPAREN); }
+";"                 { return symbol(sym.SEMI); }
+{number}            { return symbol(sym.NUM, yytext()); }
+{identifier}        { return symbol(sym.ID, yytext()); }
+{WhiteSpace}+       { /* skip whitespace */ }   
+.                   { 
+                        System.out.println("Unknown: "+yytext());
+                        return symbol(sym.ERROR);
+                    }
