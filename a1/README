@@ -1,10 +1,49 @@
-This directory contains the required files for building a scanner
-for the TINY language.
 
-To build the scanner, type "make" in the current directory, which will 
-generate a bytecode file called Scanner.class.
+/****************************************
+ * Nolan Mullins
+ * 0939720
+ * Compilers
+ ****************************************/
 
-To test source code like "fac.tiny", type "java Scanner < fac.tiny" 
-and the token sequence will be displayed on the screen.
+**********************************
+Problem
+**********************************
+Build a program to scan in SGML files and filter out unneeded data
 
-To rebuild the scanner, type "make clean" and type "make" again.
+*******
+Compile
+*******
+make
+
+*******
+Running
+*******
+java Scanner < newsdata.txt > result.out
+
+This pipes the newsdata file into stdin and will output to result.out
+
+**********************************
+Test plan
+**********************************
+
+Used regex101.com to verify regex against multiple cases
+
+Numbers
+1.0
++1.0
+-1.134
+1
+-1
++2
+124.123.123 -> not a number
+100-100 -> not a number
+
+Tags
+<DOC>
+<Textalign="left" id="10">
+<doc >
+
+**********************************
+Acknowledgements
+**********************************
+I used the provided example files 

@@ -8,6 +8,7 @@
 <P >
 January 1, 1990, Monday, Home Edition 
 </P>
+</P>
 </Text>
 </DOC>
 <DOCID> TEST TESTTTTESTETSTE TESTING </DOCID>

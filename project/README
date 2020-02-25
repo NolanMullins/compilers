@@ -1,10 +1,43 @@
-This directory contains the required files for building a scanner
-for the TINY language.
 
-To build the scanner, type "make" in the current directory, which will 
-generate a bytecode file called Scanner.class.
+****************************************
+* Nolan Mullins & Dalton Polhill
+* Compilers
+****************************************
 
-To test source code like "fac.tiny", type "java Scanner < fac.tiny" 
-and the token sequence will be displayed on the screen.
+**********************************
+Problem
+**********************************
+todo
 
-To rebuild the scanner, type "make clean" and type "make" again.
+
+*******
+Setup
+*******
+sudo apt update
+sudo apt install openjdk-8-jdk openjdk-8-jre
+sudo apt install jflex
+sudo apt install cup
+
+
+*******
+Compile
+*******
+make
+
+
+*******
+Running
+*******
+todo
+
+
+**********************************
+Test plan
+**********************************
+todo
+
+
+**********************************
+Acknowledgements
+**********************************
+I used the provided example files 

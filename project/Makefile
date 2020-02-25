@@ -1,21 +1,23 @@
+JAVA=java
 JAVAC=javac
 JFLEX=jflex
-#JFLEX=/home/fsong/jflex/bin/jflex
-CLASS=Pair.class Token.class Lexer.class Scanner.class 
+CLASSPATH=-classpath /usr/share/java/cup.jar:.
+CUP=$(JAVA) $(CLASSPATH) java_cup.Main
+#CUP=cup
 
-all: $(CLASS)
+all: Main.class
 
-test: $(CLASS)
-	java Scanner < sampleData.txt > result.tok
-
-tokenize: $(CLASS)
-	java Scanner < newsdata.txt > result.tok
+Main.class: absyn/*.java parser.java sym.java Lexer.java ShowTreeVisitor.java Scanner.java Main.java
 
 %.class: %.java
-	$(JAVAC) $^
+	$(JAVAC) $(CLASSPATH)  $^
 
-Lexer.java: token.flex
-	$(JFLEX) token.flex
+Lexer.java: tiny.flex
+	$(JFLEX) tiny.flex
+
+parser.java: tiny.cup
+	#$(CUP) -dump -expect 3 tiny.cup
+	$(CUP) -expect 3 tiny.cup
 
 clean:
-	rm -f Lexer.java *.class *~ 
+	rm -f parser.java Lexer.java sym.java *.class absyn/*.class *~

@@ -1,0 +1,12 @@
+<DOCID> 
+TEST TESTTTTESTETSTE TESTING 
+<Subject > 
+Still relevant 
+100-100
+</P>
+<P>
+Not relevant
+</P>
+</Subject>
+</DOCID>
+

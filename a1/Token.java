@@ -42,7 +42,7 @@ class Token {
         case NL:
             return m_value;
         case ERROR_CLOSE:
-            return "ERROR("+m_value+")";
+            return "ERROR-CLOSE-"+m_value;
         default:
             return "UNKNOWN(" + m_value + ")";
         }

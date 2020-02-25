@@ -19,15 +19,7 @@ import java.util.Map.Entry;
 %eofval};
 
 %{
-    /*public class Pair {
-        public String tag = "";
-        public boolean relevant = false;
-        Pair(String tag, boolean relevent)
-        {
-            this.tag = tag;
-            this.relevant = relevant;
-        }
-    }*/
+
     private static ArrayList<Pair> tagStack = new ArrayList<>();
     private static String[] relevant = {"doc", "text", "date", "docno", "headline", "length", "p"};
 
@@ -35,6 +27,7 @@ import java.util.Map.Entry;
     {
         return line.replaceAll("([<][/])|[<>]", "").split(" ")[0];
     }
+
     public static boolean includeElement() 
     {
         //Loop through tagStack looking for filtered tags
@@ -47,6 +40,7 @@ import java.util.Map.Entry;
         }
         return true;
     }
+
     public static ArrayList<String> getRemainingTags() 
     {
         ArrayList<String> tags = new ArrayList<>();
@@ -54,6 +48,7 @@ import java.util.Map.Entry;
             tags.add(tag.tag);
         return tags;
     }
+
     public static void pushTag(String tag)
     {
         for(String check : relevant)
@@ -74,18 +69,6 @@ LineTerminator = \r|\n|\r\n
    
 /* White space is a line terminator, space, tab, or form feed. */
 WhiteSpace     = {LineTerminator} | [ \t\f]
-   
-/* A literal integer is is a number beginning with a number between
-   one and nine followed by zero or more numbers between zero and nine
-   or just a zero.  */
-//digit = [0-9]
-//number = {digit}+
-   
-/* A identifier integer is a word beginning a letter between A and
-   Z, a and z, or an underscore followed by zero or more letters
-   between A and Z, a and z, zero and nine, or an underscore. */
-//letter = [a-zA-Z]
-//identifier = {letter}+
    
 %%
    
@@ -115,8 +98,9 @@ WhiteSpace     = {LineTerminator} | [ \t\f]
                                 return new Token(Token.CLOSE, tag, yyline, yycolumn);
                             }
                             tagStack.remove(i);
+                        } else {
+                            return new Token(Token.ERROR_CLOSE, tag, yyline, yycolumn);
                         }
-                        return new Token(Token.ERROR_CLOSE, tag, yyline, yycolumn);
                     }
 
 //Number
