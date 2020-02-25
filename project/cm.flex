@@ -96,16 +96,16 @@ identifier = {letter}+
    code, that will be executed when the scanner matches the associated
    regular expression. */
    
+"/*"([^*]|([*][^\/]))*[*]+\/   { /* skip comments */ }
 "if"               { return symbol(sym.IF); }
-"then"             { return symbol(sym.THEN); }
+"{"             { return symbol(sym.THEN); }
 "else"             { return symbol(sym.ELSE); }
-"end"              { return symbol(sym.END); }
-"repeat"           { return symbol(sym.REPEAT); }
-"until"            { return symbol(sym.UNTIL); }
+"}"              { return symbol(sym.END); }
+"while"           { return symbol(sym.REPEAT); }
 "read"             { return symbol(sym.READ); }
 "write"            { return symbol(sym.WRITE); }
-":="               { return symbol(sym.ASSIGN); }
-"="                { return symbol(sym.EQ); }
+"="               { return symbol(sym.ASSIGN); }
+"=="                { return symbol(sym.EQ); }
 "<"                { return symbol(sym.LT); }
 ">"                { return symbol(sym.GT); }
 "+"                { return symbol(sym.PLUS); }
@@ -118,5 +118,7 @@ identifier = {letter}+
 {number}           { return symbol(sym.NUM, yytext()); }
 {identifier}       { return symbol(sym.ID, yytext()); }
 {WhiteSpace}+      { /* skip whitespace */ }   
-"{"[^\}]*"}"       { /* skip comments */ }
-.                  { return symbol(sym.ERROR); }
+.                  { 
+                    System.out.println("Unknown: "+yytext());
+                    return symbol(sym.ERROR);
+                   }

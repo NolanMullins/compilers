@@ -71,7 +71,7 @@ parser code {:
    
 /* ------------Declaration of Terminals and Non Terminals Section----------- */
    
-terminal IF, THEN, ELSE, END, REPEAT, UNTIL, READ, WRITE;
+terminal IF, THEN, ELSE, END, REPEAT, READ, WRITE;
 terminal ASSIGN, EQ, LT, GT, PLUS, MINUS, TIMES, OVER, LPAREN, RPAREN, SEMI;
 terminal String ID, NUM;
 terminal ERROR;
@@ -93,7 +93,7 @@ program	     ::= stmt_seq:s
                  {: RESULT = s; :}
                ;
 
-stmt_seq     ::= stmt_seq:s1 SEMI stmt:s2 
+stmt_seq     ::= stmt_seq:s1 stmt:s2
                  {: ExpList t = s1;
                     while( t.tail != null )
                       t = t.tail;
@@ -103,7 +103,7 @@ stmt_seq     ::= stmt_seq:s1 SEMI stmt:s2
                | stmt:s
                  {: RESULT = new ExpList(s, null); :}
                | error SEMI stmt:s
-                 {: parser.report_error("invalid", null); 
+                 {: parser.report_error("invalid statement", null); 
                     RESULT = new ExpList(s, null); 
                  :}
                ;
@@ -120,17 +120,17 @@ stmt         ::= if_stmt:i
                  {: RESULT = w; :}
                ;
 
-if_stmt      ::= IF:i exp:e THEN stmt_seq:s END
+if_stmt      ::= IF:i LPAREN exp:e RPAREN THEN stmt_seq:s END
                  {: RESULT = new IfExp(ileft, iright, e, s, null); :}
-               | IF:i exp:e THEN stmt_seq:s1 ELSE stmt_seq:s2 END
+               | IF:i LPAREN exp:e RPAREN THEN stmt_seq:s1 END ELSE THEN stmt_seq:s2 END
                  {: RESULT = new IfExp(ileft, iright, e, s1, s2); :}
                ;
 
-repeat_stmt  ::= REPEAT:r stmt_seq:s UNTIL exp:e
-                 {: RESULT = new RepeatExp(rleft, rright, s, e); :}
+repeat_stmt  ::= REPEAT:r LPAREN exp:e RPAREN THEN stmt_seq:s END
+                 {: RESULT = new RepeatExp(rleft, rright, e, s); :}
                ;
 
-assign_stmt  ::= ID:i ASSIGN exp:e
+assign_stmt  ::= ID:i ASSIGN exp:e SEMI
                  {: RESULT = new AssignExp(ileft, iright, new VarExp(ileft, iright, i), e); :} 
                ;
 
