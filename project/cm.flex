@@ -107,9 +107,9 @@ identifier = [_a-zA-Z][_a-zA-Z0-9]*
 "while"             { return symbol(sym.REPEAT); }
 /* todo keywords
 "return"              { return symbol(sym.READ); }
-"void"             { return symbol(sym.WRITE); }
-"int"             { return symbol(sym.WRITE); }
 */
+"void"              { return symbol(sym.TYPE); }
+"int"               { return symbol(sym.TYPE); }
 
 /* Don't need, delete?
 "read"              { return symbol(sym.READ); }
@@ -131,9 +131,9 @@ identifier = [_a-zA-Z][_a-zA-Z0-9]*
 "/"                 { return symbol(sym.OVER); }
 "("                 { return symbol(sym.LPAREN); }
 ")"                 { return symbol(sym.RPAREN); }
+"["                 { return symbol(sym.LSQBRK); }
+"]"                 { return symbol(sym.RSQBRK); }
 /* todo
-"["                 { return symbol(sym.LPAREN); }
-"]"                 { return symbol(sym.RPAREN); }
 ","                 { return symbol(sym.SEMI); }
 */
 ";"                 { return symbol(sym.SEMI); }

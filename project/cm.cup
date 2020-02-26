@@ -72,8 +72,8 @@ parser code {:
 /* ------------Declaration of Terminals and Non Terminals Section----------- */
    
 terminal IF, THEN, ELSE, END, REPEAT, READ, WRITE;
-terminal ASSIGN, EQ, LT, GT, PLUS, MINUS, TIMES, OVER, LPAREN, RPAREN, SEMI;
-terminal String ID, NUM;
+terminal ASSIGN, EQ, LT, GT, PLUS, MINUS, TIMES, OVER, LPAREN, RPAREN, LSQBRK, RSQBRK, SEMI;
+terminal String ID, NUM, TYPE;
 terminal ERROR;
    
 non terminal Exp program1;
@@ -85,13 +85,52 @@ non terminal Exp exp, simple_exp, term, factor;
    
 start with program;
 
-program1     ::= exp:e 
-                 {: RESULT = e; :}
-               ;
-
 program	     ::= stmt_seq:s
                  {: RESULT = s; :}
                ;
+
+dec_seq         ::= dec_seq:s1 dec:s2
+                    {:
+                        /*todo*/
+                    :}
+                |   dec:s 
+                    {: RESULT = new ExpList(s, null); :}
+                |   error SEMI dec:s
+                    {: 
+                        parser.report_error("invalid decleration near "+s, null); 
+                        RESULT = new ExpList(s, null); 
+                    :}
+               ;
+
+dec             ::= dec_var: v
+                    {: RESULT = v; :}
+                |   dec_fun: f
+                    {: RESULT = f; :}
+                ;
+
+dev_var         ::= TYPE:t ID:i SEMI
+                    {: /*todo*/ :}
+                |   TYPE:t ID:i LSQBRK NUM RSQBRK SEMI
+                    {: /*todo*/ :} 
+                ;
+
+dec_fun         ::= TYPE:t ID:i LPAREN params:s RPAREN stmt_seq:s
+                    {: /*todo*/ :}
+                ;
+
+params          ::= param_seq:s
+                    {: /*todo*/ :}
+                ;
+                /*|   void //todo*/
+
+                /*todo needs ,*/
+param_seq       ::= param_seq:s , param:p
+                    {: /*todo*/ :}
+                |   param:p
+                    {: /*todo*/ :}
+                ;
+
+/*todo param*/
 
 stmt_seq     ::= stmt_seq:s1 stmt:s2
                  {: ExpList t = s1;
@@ -103,7 +142,7 @@ stmt_seq     ::= stmt_seq:s1 stmt:s2
                | stmt:s
                  {: RESULT = new ExpList(s, null); :}
                | error SEMI stmt:s
-                 {: parser.report_error("invalid statement", null); 
+                 {: parser.report_error("invalid statement near "+s, null); 
                     RESULT = new ExpList(s, null); 
                  :}
                ;
