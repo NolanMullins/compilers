@@ -86,7 +86,7 @@ number = {digit}+
    Z, a and z, or an underscore followed by zero or more letters
    between A and Z, a and z, zero and nine, or an underscore. */
 letter = [a-zA-Z]
-identifier = {letter}+
+identifier = [_a-zA-Z][_a-zA-Z0-9]*
    
 %%
 /* ------------------------Lexical Rules Section---------------------- */
@@ -105,18 +105,37 @@ identifier = {letter}+
 "else"              { return symbol(sym.ELSE); }
 "}"                 { return symbol(sym.END); }
 "while"             { return symbol(sym.REPEAT); }
+/* todo keywords
+"return"              { return symbol(sym.READ); }
+"void"             { return symbol(sym.WRITE); }
+"int"             { return symbol(sym.WRITE); }
+*/
+
+/* Don't need, delete?
 "read"              { return symbol(sym.READ); }
 "write"             { return symbol(sym.WRITE); }
+*/
+
 "="                 { return symbol(sym.ASSIGN); }
 "=="                { return symbol(sym.EQ); }
 "<"                 { return symbol(sym.LT); }
 ">"                 { return symbol(sym.GT); }
+/* todo
+"<="                 { return symbol(sym.LT); }
+">="                 { return symbol(sym.GT); }
+"!="                 { return symbol(sym.GT); }
+*/
 "+"                 { return symbol(sym.PLUS); }
 "-"                 { return symbol(sym.MINUS); }
 "*"                 { return symbol(sym.TIMES); }
 "/"                 { return symbol(sym.OVER); }
 "("                 { return symbol(sym.LPAREN); }
 ")"                 { return symbol(sym.RPAREN); }
+/* todo
+"["                 { return symbol(sym.LPAREN); }
+"]"                 { return symbol(sym.RPAREN); }
+","                 { return symbol(sym.SEMI); }
+*/
 ";"                 { return symbol(sym.SEMI); }
 {number}            { return symbol(sym.NUM, yytext()); }
 {identifier}        { return symbol(sym.ID, yytext()); }
