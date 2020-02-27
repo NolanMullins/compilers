@@ -1,4 +1,4 @@
 package absyn;
 
-abstract public class Exp extends Absyn {
+abstract public class Dec extends Absyn {
 }
