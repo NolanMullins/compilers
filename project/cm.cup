@@ -71,9 +71,9 @@ parser code {:
    
 /* ------------Declaration of Terminals and Non Terminals Section----------- */
    
-terminal IF, THEN, ELSE, END, REPEAT, READ, WRITE;
-terminal ASSIGN, EQ, LT, GT, PLUS, MINUS, TIMES, OVER, LPAREN, RPAREN, LSQBRK, RSQBRK, SEMI, COMMA;
-terminal String ID, NUM, TYPE;
+terminal IF, THEN, ELSE, END, REPEAT, READ, WRITE, RETURN;
+terminal ASSIGN, EQ, LT, GT, LTE, GTE, NE, PLUS, MINUS, TIMES, OVER, LPAREN, RPAREN, LSQBRK, RSQBRK, SEMI, COMMA;
+terminal String ID, NUM, INT, VOID;
 terminal ERROR;
    
 /*non terminal Exp program1;*/
@@ -87,10 +87,12 @@ non terminal Exp exp, simple_exp, term, factor, dec, dec_fun, dec_var;
    
 start with program;
 
-program	     ::= dec_seq:s
+/* 1. {Program}  */
+program	      ::= dec_seq:s
                  {: RESULT = s; :}
-               ;
+              ;
 
+/* 2. Declaration List  */
 dec_seq         ::= dec_seq:s1 dec:s2
                     {: ExpList t = s1;
                         while( t.tail != null )
@@ -107,28 +109,40 @@ dec_seq         ::= dec_seq:s1 dec:s2
                     :}
                ;
 
+/* 3. Declaration  */
 dec             ::= dec_var: v
                     {: RESULT = v; :}
                 |   dec_fun: f
                     {: RESULT = f; :}
                 ;
 
-dev_var         ::= TYPE:t ID:i SEMI
+/* 4. Variable Declaration  */
+dec_var         ::= type_spec:t ID:i SEMI
                     {: /*todo*/ :}
-                |   TYPE:t ID:i LSQBRK NUM RSQBRK SEMI
+                |   type_spec:t ID:i LSQBRK NUM:n RSQBRK SEMI
                     {: /*todo*/ :} 
                 ;
 
-dec_fun         ::= TYPE:t ID:i LPAREN params:s RPAREN stmt_seq:s
+/* 5. Type Specifier  */
+type_spec       ::= INT
+                    {: /*todo*/ :}
+                |   VOID
+                    {: /*todo*/ :} 
+                ;
+
+/* 6. Function Declaration  */
+dec_fun         ::= type_spec:t ID:i LPAREN params:s RPAREN stmt_seq:s
                     {: /*todo*/ :}
                 ;
 
+/* 7. Paramaters  */
 params          ::= param_seq:s
                     {: /*todo*/ :}
-                |   TYPE:s
+                |   type_spec:s
                     {: /*todo only allow void, might get away with not checking*/ :}
                 ;
 
+/* 8. Paramaters List  */
                 /*todo needs ,*/
 param_seq       ::= param_seq:s , param:p
                     {: /*todo*/ :}
@@ -136,15 +150,174 @@ param_seq       ::= param_seq:s , param:p
                     {: /*todo*/ :}
                 ;
 
-param           ::= TYPE:t ID:i 
+/* 9. Parameter  */
+param           ::= type_spec:t ID:i 
                     {: /*todo*/ :}
-                |   TYPE:t ID:i LSQBRK RSQBRK
+                |   type_spec:t ID:i LSQBRK RSQBRK
                     {: /*todo*/ :}
                 ;
 
 /* the above are the first 9 rules */
 
-/*need to look at rule 10*/
+/* 10. Compound Statement */
+cmpd_stmt       ::= THEN local_decs dec_var END
+                    {: /*todo*/ :}
+                ;
+
+/* 11. Local Declarations */
+local_decs      ::= local_decs dec_var
+                    {: /*todo*/ :}
+                |   /*todo: this is nothing - which will be an epsilon transition*/
+                    {: /*todo: epsilon transition here */ :}
+                ;
+
+/* 12. Statement List */
+stmt_list       ::= stmt_list stmt
+                    {: /*todo*/ :}
+                |   /*todo: this is nothing - which will be an epsilon transition*/
+                    {: /*todo: epsilon transition here */ :}
+                ;
+
+/* 13. Statement */
+stmt          ::= exp_stmt
+                  {: /*todo*/ :}
+              |   cmpd_stmt
+                  {: /*todo*/ :}
+              |   sel_stmt
+                  {: /*todo*/ :}
+              |   iter_stmt
+                  {: /*todo*/ :}
+              |   ret_stmt
+                  {: /*todo*/ :}
+              ;
+
+/* 14. Expression Statement */
+exp_stmt      ::= exp SEMI 
+                  {: /*todo*/ :}
+              |   SEMI
+                  {: /*todo*/ :}
+              ;
+
+/* 15. Selection Statement */
+sel_stmt      ::= IF LPAREN exp RPAREN stmt
+                  {: /*todo*/ :}
+              |   IF LPAREN exp RPAREN stmt ELSE stmt
+                  {: /*todo*/ :}
+              ;
+
+/* While Statment we will need for other rules*/
+while_stmt    ::= REPEAT:r LPAREN exp:e RPAREN THEN stmt_seq:s END
+                 {: RESULT = new RepeatExp(rleft, rright, e, s); :}
+              ;
+
+/* 16. Iteration Statement */
+iter_stmt     ::= while_stmt LPAREN exp RPAREN stmt
+                  {: /*todo*/ :}
+              ;
+
+/* 17. Return Statement */
+ret_stmt      ::= RETURN exp SEMI
+                  {: /*todo*/ :}
+              |   RETURN SEMI
+                  {: /*todo*/ :}
+              ;
+
+/* 18. Expression */
+exp           ::= var ASSIGN exp
+                  {: /*todo*/ :}
+              |   sim_exp
+                  {: /*todo*/ :}
+              ;
+
+/* 19. Variable */
+var           ::= ID
+                  {: /*todo*/ :}
+              |   ID LSQBRK exp RSQBRK
+                  {: /*todo*/ :}
+              ;
+
+/* 20. Simple Expression */
+sim_exp       ::= add_exp relop add_exp
+                  {: /*todo*/ :}
+              |   add_exp
+                  {: /*todo*/ :}
+              ;
+
+/* 21. Relative Operation */
+relop       ::= LTE 
+                {: /*todo*/ :}
+            |   LT
+                {: /*todo*/ :}
+            |   GT
+                {: /*todo*/ :}
+            |   GTE
+                {: /*todo*/ :}
+            |   EQ
+                {: /*todo*/ :}
+            |   NE
+                {: /*todo*/ :}
+            ;
+
+/* 22. Additive Expression */
+add_exp       ::= add_exp addop term
+                  {: /*todo*/ :}
+              |   term
+                  {: /*todo*/ :}
+              ;
+
+/* 23. Addition / Subtraction Operation */
+addop       ::= PLUS
+                {: /*todo*/ :}
+            |   MINUS
+                {: /*todo*/ :}
+            ;
+
+/* 24. Term */
+term        ::= term mulop factor
+                {: /*todo*/ :}
+            |   factor
+                {: /*todo*/ :}
+            ;
+
+/* 25. Multiplication / Division Operation */
+mulop       ::= TIMES
+                {: /*todo*/ :}
+            |   OVER
+                {: /*todo*/ :}
+            ;
+
+/* 26. Factor  */
+factor      ::= LPAREN exp RPAREN
+                {: /*todo*/ :}
+            |   var
+                {: /*todo*/ :}
+            |   call
+                {: /*todo*/ :}
+            |   NUM:n
+                {: /*todo*/ :}
+            ;
+
+/* 27. Call  */
+call        ::= ID LPAREN args RPAREN
+                {: /*todo*/ :}
+            ;
+
+/* 28. Arguments  */
+args        ::= arg_list
+                {: /*todo*/ :}
+            |   /*todo: this is nothing - which will be an epsilon transition*/
+                {: /*todo: epsilon transition here */ :}
+            ;
+
+/* 29. Argument List  */
+arg_list    ::= arg_list COMMA exp
+                {: /*todo*/ :}
+            |   exp
+                {: /*todo*/ :}
+            ;
+
+
+/* These are his examples */
 stmt_seq     ::= stmt_seq:s1 stmt:s2
                  {: ExpList t = s1;
                     while( t.tail != null )

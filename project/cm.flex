@@ -105,11 +105,9 @@ identifier = [_a-zA-Z][_a-zA-Z0-9]*
 "else"              { return symbol(sym.ELSE); }
 "}"                 { return symbol(sym.END); }
 "while"             { return symbol(sym.REPEAT); }
-/* todo keywords
-"return"              { return symbol(sym.READ); }
-*/
+"return"            { return symbol(sym.RETURN); }
 "void"              { return symbol(sym.VOID); }
-"int"               { return symbol(sym.TYPE); }
+"int"               { return symbol(sym.INT); }
 
 /* Don't need, delete?
 "read"              { return symbol(sym.READ); }
@@ -120,11 +118,10 @@ identifier = [_a-zA-Z][_a-zA-Z0-9]*
 "=="                { return symbol(sym.EQ); }
 "<"                 { return symbol(sym.LT); }
 ">"                 { return symbol(sym.GT); }
-/* todo
-"<="                 { return symbol(sym.LT); }
-">="                 { return symbol(sym.GT); }
-"!="                 { return symbol(sym.GT); }
-*/
+"<="                 { return symbol(sym.LTE); }
+">="                 { return symbol(sym.GTE); }
+"!="                 { return symbol(sym.NE); }
+
 "+"                 { return symbol(sym.PLUS); }
 "-"                 { return symbol(sym.MINUS); }
 "*"                 { return symbol(sym.TIMES); }
