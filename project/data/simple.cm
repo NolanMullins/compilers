@@ -1,12 +1,8 @@
 /* A program to compute the factorial value of an integer */
-/* var declare -> todo */
 int x; 
-/* function call -> todo */
-x = input();
-fac  = 1;
-while (x > 1) {
-    fac = fac * x;
-    x = x -1;
+void add (int x, int y) {
+    int res;
+    res = a + b;
+    return res;
 }
-/*output(fac);*/
 

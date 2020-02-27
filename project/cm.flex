@@ -108,7 +108,7 @@ identifier = [_a-zA-Z][_a-zA-Z0-9]*
 /* todo keywords
 "return"              { return symbol(sym.READ); }
 */
-"void"              { return symbol(sym.TYPE); }
+"void"              { return symbol(sym.VOID); }
 "int"               { return symbol(sym.TYPE); }
 
 /* Don't need, delete?
@@ -133,9 +133,7 @@ identifier = [_a-zA-Z][_a-zA-Z0-9]*
 ")"                 { return symbol(sym.RPAREN); }
 "["                 { return symbol(sym.LSQBRK); }
 "]"                 { return symbol(sym.RSQBRK); }
-/* todo
-","                 { return symbol(sym.SEMI); }
-*/
+","                 { return symbol(sym.COMA); }
 ";"                 { return symbol(sym.SEMI); }
 {number}            { return symbol(sym.NUM, yytext()); }
 {identifier}        { return symbol(sym.ID, yytext()); }

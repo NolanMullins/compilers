@@ -72,26 +72,31 @@ parser code {:
 /* ------------Declaration of Terminals and Non Terminals Section----------- */
    
 terminal IF, THEN, ELSE, END, REPEAT, READ, WRITE;
-terminal ASSIGN, EQ, LT, GT, PLUS, MINUS, TIMES, OVER, LPAREN, RPAREN, LSQBRK, RSQBRK, SEMI;
+terminal ASSIGN, EQ, LT, GT, PLUS, MINUS, TIMES, OVER, LPAREN, RPAREN, LSQBRK, RSQBRK, SEMI, COMMA;
 terminal String ID, NUM, TYPE;
 terminal ERROR;
    
-non terminal Exp program1;
-non terminal ExpList program, stmt_seq;
+/*non terminal Exp program1;*/
+non terminal ExpList program, dec_seq, stmt_seq;
 non terminal Exp stmt, if_stmt, repeat_stmt, assign_stmt, read_stmt, write_stmt;
-non terminal Exp exp, simple_exp, term, factor;   
+non terminal Exp exp, simple_exp, term, factor, dec, dec_fun, dec_var;  
+
+/*todo add all new non terminals*/
 
 /* ----------------------------Grammar Section-------------------- */
    
 start with program;
 
-program	     ::= stmt_seq:s
+program	     ::= dec_seq:s
                  {: RESULT = s; :}
                ;
 
 dec_seq         ::= dec_seq:s1 dec:s2
-                    {:
-                        /*todo*/
+                    {: ExpList t = s1;
+                        while( t.tail != null )
+                        t = t.tail;
+                        t.tail = new ExpList(s2, null);
+                        RESULT = s1;
                     :}
                 |   dec:s 
                     {: RESULT = new ExpList(s, null); :}
@@ -120,8 +125,9 @@ dec_fun         ::= TYPE:t ID:i LPAREN params:s RPAREN stmt_seq:s
 
 params          ::= param_seq:s
                     {: /*todo*/ :}
+                |   TYPE:s
+                    {: /*todo only allow void, might get away with not checking*/ :}
                 ;
-                /*|   void //todo*/
 
                 /*todo needs ,*/
 param_seq       ::= param_seq:s , param:p
@@ -130,8 +136,15 @@ param_seq       ::= param_seq:s , param:p
                     {: /*todo*/ :}
                 ;
 
-/*todo param*/
+param           ::= TYPE:t ID:i 
+                    {: /*todo*/ :}
+                |   TYPE:t ID:i LSQBRK RSQBRK
+                    {: /*todo*/ :}
+                ;
 
+/* the above are the first 9 rules */
+
+/*need to look at rule 10*/
 stmt_seq     ::= stmt_seq:s1 stmt:s2
                  {: ExpList t = s1;
                     while( t.tail != null )
