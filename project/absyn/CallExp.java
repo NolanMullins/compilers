@@ -1,9 +1,9 @@
 package absyn;
 
-public class VarExp extends Exp {
+public class IntExp extends Exp {
   public String value;
 
-  public VarExp( int row, int col, String value ) {
+  public IntExp( int row, int col, String value ) {
     this.row = row;
     this.col = col;
     this.value = value;
