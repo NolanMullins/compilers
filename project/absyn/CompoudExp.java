@@ -1,8 +1,6 @@
 package absyn;
 
 public class CompoundExp extends Exp {
-    public int row;
-    public int col;
     public VarDecList decs;
     public ExpList exps;
 

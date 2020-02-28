@@ -1,8 +1,6 @@
 package absyn;
 
 public class SimpleVar extends Var {
-    public int row;
-    public int col;
     public String name;
 
     public SimpleVar( int row, int col, String name ) {

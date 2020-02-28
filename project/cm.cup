@@ -77,9 +77,13 @@ terminal String ID, NUM, INT, VOID;
 terminal ERROR;
    
 /*non terminal Exp program1;*/
-non terminal ExpList program, dec_seq, stmt_seq;
+non terminal DecList dec_seq;
+non terminal VarDecList vardec_seq, local_decs, param_seq;
+non terminal ExpList program, stmt_seq, stmt_list;
 non terminal Exp stmt, if_stmt, repeat_stmt, assign_stmt, read_stmt, write_stmt;
-non terminal Exp exp, simple_exp, term, factor, dec, dec_fun, dec_var;  
+non terminal Exp exp, simple_exp, term, factor, dec;
+non terminal Var simple_var, index_var;
+non terminal VarDex dec_fun, dec_var; 
 
 /*todo add all new non terminals*/
 
@@ -94,18 +98,18 @@ program	      ::= dec_seq:s
 
 /* 2. Declaration List  */
 dec_seq         ::= dec_seq:s1 dec:s2
-                    {: ExpList t = s1;
+                    {: decList t = s1;
                         while( t.tail != null )
-                        t = t.tail;
-                        t.tail = new ExpList(s2, null);
+                            t = t.tail;
+                        t.tail = new DecList(s2, null);
                         RESULT = s1;
                     :}
                 |   dec:s 
-                    {: RESULT = new ExpList(s, null); :}
+                    {: RESULT = new DecList(s, null); :}
                 |   error SEMI dec:s
                     {: 
                         parser.report_error("invalid decleration near "+s, null); 
-                        RESULT = new ExpList(s, null); 
+                        RESULT = new DecList(s, null); 
                     :}
                ;
 
@@ -118,26 +122,26 @@ dec             ::= dec_var: v
 
 /* 4. Variable Declaration  */
 dec_var         ::= type_spec:t ID:i SEMI
-                    {: /*todo*/ :}
+                    {: RESULT = new SimpleDec(tleft, tright, t.type, i); :}
                 |   type_spec:t ID:i LSQBRK NUM:n RSQBRK SEMI
-                    {: /*todo*/ :} 
+                    {: RESULT = new ArrayDec(tleft, tright, t.type, i, n); :}
                 ;
 
 /* 5. Type Specifier  */
-type_spec       ::= INT
-                    {: /*todo*/ :}
-                |   VOID
-                    {: /*todo*/ :} 
+type_spec       ::= INT:i
+                    {: RESULT = new NameTy(ileft, iright, NameTy.INT); :}
+                |   VOID:v
+                    {: RESULT = new NameTy(vleft, vright, NameTy.VOID); :}
                 ;
 
 /* 6. Function Declaration  */
-dec_fun         ::= type_spec:t ID:i LPAREN params:s RPAREN stmt_seq:s
-                    {: /*todo*/ :}
+dec_fun         ::= type_spec:t ID:i LPAREN params:p RPAREN cmpd_stmt:c
+                    {: RESULT = new FunctionDec(tleft, tright, t.type, i, p, c); :}
                 ;
 
 /* 7. Paramaters  */
 params          ::= param_seq:s
-                    {: /*todo*/ :}
+                    {: RESULT = s; :}
                 |   type_spec:s
                     {: /*todo only allow void, might get away with not checking*/ :}
                 ;
@@ -145,37 +149,56 @@ params          ::= param_seq:s
 /* 8. Paramaters List  */
                 /*todo needs ,*/
 param_seq       ::= param_seq:s , param:p
-                    {: /*todo*/ :}
+                    {: 
+                        VarDecList v = s;
+                        while( v.tail != null )
+                            v = v.tail;
+                        v.tail = new VarDecList(p, null);
+                        RESULT = s;
+                    :}
                 |   param:p
-                    {: /*todo*/ :}
+                    {: RESULT = new VarDecList(p, null); :}
                 ;
 
+/* TODO, figure what to put for array size, maybe it should be included in param? */
 /* 9. Parameter  */
 param           ::= type_spec:t ID:i 
-                    {: /*todo*/ :}
+                    {: RESULT = new SimpleDec(tleft, tright, t.type, i); :}
                 |   type_spec:t ID:i LSQBRK RSQBRK
-                    {: /*todo*/ :}
+                    {: RESULT = new ArrayDec(tleft, tright, t.type, i, 0) :}
                 ;
 
 /* the above are the first 9 rules */
 
 /* 10. Compound Statement */
-cmpd_stmt       ::= THEN local_decs dec_var END
-                    {: /*todo*/ :}
+cmpd_stmt       ::= THEN:t local_decs:l stmt_list:s END:e
+                    {: RESULT = new CompoundExp(tleft, tright, l, s) :}
                 ;
 
 /* 11. Local Declarations */
-local_decs      ::= local_decs dec_var
-                    {: /*todo*/ :}
-                |   /*todo: this is nothing - which will be an epsilon transition*/
-                    {: /*todo: epsilon transition here */ :}
+local_decs      ::= local_decs:l dec_var:d
+                    {: 
+                        VarDecList v = l;
+                        while( v.tail != null )
+                            v = v.tail;
+                        v.tail = new VarDecList(d, null);
+                        RESULT = l;
+                    :}
+                |   
+                    {: /*todo: epsilon transition here, probably just NULL or an VarDecList(NULL, NULL) */ :}
                 ;
 
 /* 12. Statement List */
-stmt_list       ::= stmt_list stmt
-                    {: /*todo*/ :}
+stmt_list       ::= stmt_list:l stmt:s
+                    {: 
+                        ExpList e = l;
+                        while( e.tail != null )
+                            e = e.tail;
+                        e.tail = new ExpList(s, null);
+                        RESULT = l;
+                    :}
                 |   /*todo: this is nothing - which will be an epsilon transition*/
-                    {: /*todo: epsilon transition here */ :}
+                    {: /*todo: epsilon transition here, probably just NULL or an ExpList(NULL, NULL) */ :}
                 ;
 
 /* 13. Statement */
