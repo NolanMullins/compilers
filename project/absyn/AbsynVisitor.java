@@ -6,6 +6,7 @@ public interface AbsynVisitor {
   public void visit( IndexVar exp, int level );
 
   public void visit( EpsilonExp exp, int level );
+  public void visit( NilExp exp, int level );
   public void visit( VarExp exp, int level );
   public void visit( IntExp exp, int level );
   public void visit( CallExp exp, int level );
