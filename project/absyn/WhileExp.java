@@ -1,13 +1,13 @@
 package absyn;
 
 public class WhileExp extends Exp {
-  public ExpList exps;
+  public Exp body;
   public Exp test;
 
-  public WhileExp( int row, int col, Exp test, ExpList exps ) {
+  public WhileExp( int row, int col, Exp test, Exp body ) {
     this.row = row;
     this.col = col;
-    this.exps = exps;
+    this.body = body;
     this.test = test;
   }
 

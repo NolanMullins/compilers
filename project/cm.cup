@@ -323,7 +323,7 @@ mulop       ::= TIMES
 factor      ::= LPAREN:l exp:e RPAREN:r
                 {: RESULT = e; :}
             |   var:v
-                {: RESULT = v; :}
+                {: RESULT = new VarExp(vleft, vright, v); :}
             |   call:c
                 {: RESULT = c; :}
             |   NUM:n
@@ -353,5 +353,5 @@ arg_list    ::= arg_list:a COMMA exp:e
                     RESULT = a;
                 :}
             |   exp:e
-                {: RESULT = e; :}
+                {: RESULT = new ExpList(e, null); :}
             ;
