@@ -100,7 +100,16 @@ public class ShowTreeVisitor implements AbsynVisitor {
 
   public void visit( NameTy t, int level ) {
     indent( level );
-    System.out.println( "NameTy: " + String.valueOf(t.type));
+
+    // Get the string of the represented int
+    String typeString = "";
+    if (t.type == 0) {
+      typeString = "int";
+    } else{ 
+      typeString = "void";
+    }
+
+    System.out.println( "NameTy: " + typeString);
   }
 
   public void visit( VarDecList varDecList, int level ) {
