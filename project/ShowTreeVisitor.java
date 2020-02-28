@@ -128,7 +128,10 @@ public class ShowTreeVisitor implements AbsynVisitor {
 
   public void visit( ArrayDec arr, int level) {
     indent( level );
-    System.out.println( "ArrayDec: " + String.valueOf(arr.type) + " " + String.valueOf(arr.name));
+    System.out.println( "ArrayDec: " );
+    arr.type.accept( this, ++level );
+    indent( ++level );
+    System.out.println( "Name: " + arr.name);
     arr.size.accept( this, ++level );
   }
 
