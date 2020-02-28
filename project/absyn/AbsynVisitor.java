@@ -5,7 +5,7 @@ public interface AbsynVisitor {
   public void visit( SimpleVar exp, int level );
   public void visit( IndexVar exp, int level );
 
-  public void visit( EplsilonExp exp, int level );
+  public void visit( EpsilonExp exp, int level );
   public void visit( VarExp exp, int level );
   public void visit( IntExp exp, int level );
   public void visit( CallExp exp, int level );
@@ -24,4 +24,8 @@ public interface AbsynVisitor {
   public void visit( DecList exp, int level );
   public void visit( VarDecList exp, int level );
 
+  public void visit( NameTy exp, int level );
+  public void visit( ReadExp exp, int level );
+  public void visit( RepeatExp exp, int level );
+  public void visit( WriteExp exp, int level );
 }

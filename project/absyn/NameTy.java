@@ -3,8 +3,8 @@ package absyn;
 public class NameTy extends Absyn {
     public int type;
 
-    final static int INT = 0;
-    final static int VOID = 1;
+    final public static int INT = 0;
+    final public static int VOID = 1;
 
   public NameTy( int row, int col, int type ) {
       this.row = row;

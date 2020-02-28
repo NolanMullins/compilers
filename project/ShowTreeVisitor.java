@@ -48,10 +48,10 @@ public class ShowTreeVisitor implements AbsynVisitor {
       case OpExp.MINUS:
         System.out.println( " - " );
         break;
-      case OpExp.TIMES:
+      case OpExp.MUL:
         System.out.println( " * " );
         break;
-      case OpExp.OVER:
+      case OpExp.DIV:
         System.out.println( " / " );
         break;
       case OpExp.EQ:
