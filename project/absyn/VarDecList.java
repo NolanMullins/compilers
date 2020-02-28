@@ -4,7 +4,7 @@ public class VarDecList extends Absyn {
   public VarDec head;
   public VarDecList tail;
 
-  public ExpList( VarDec head, VarDecList tail ) {
+  public VarDecList( VarDec head, VarDecList tail ) {
     this.head = head;
     this.tail = tail;
   }

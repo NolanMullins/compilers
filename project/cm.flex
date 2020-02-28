@@ -104,7 +104,7 @@ identifier = [_a-zA-Z][_a-zA-Z0-9]*
 "{"                 { return symbol(sym.THEN); }
 "else"              { return symbol(sym.ELSE); }
 "}"                 { return symbol(sym.END); }
-"while"             { return symbol(sym.REPEAT); }
+"while"             { return symbol(sym.WHILE); }
 "return"            { return symbol(sym.RETURN); }
 "void"              { return symbol(sym.VOID); }
 "int"               { return symbol(sym.INT); }
@@ -130,7 +130,7 @@ identifier = [_a-zA-Z][_a-zA-Z0-9]*
 ")"                 { return symbol(sym.RPAREN); }
 "["                 { return symbol(sym.LSQBRK); }
 "]"                 { return symbol(sym.RSQBRK); }
-","                 { return symbol(sym.COMA); }
+","                 { return symbol(sym.COMMA); }
 ";"                 { return symbol(sym.SEMI); }
 {number}            { return symbol(sym.NUM, yytext()); }
 {identifier}        { return symbol(sym.ID, yytext()); }
