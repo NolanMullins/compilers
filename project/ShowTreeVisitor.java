@@ -143,7 +143,8 @@ public class ShowTreeVisitor implements AbsynVisitor {
     System.out.println( "FunctionDec: " );
 
     dec.type.accept( this, ++level);
-    System.out.println(dec.func);
+    indent( ++level );
+    System.out.println("Name: " + dec.func);
 
     dec.params.accept( this, ++level );
     dec.body.accept( this, ++level );
