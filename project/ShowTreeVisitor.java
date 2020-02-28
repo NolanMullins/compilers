@@ -1,5 +1,7 @@
 import absyn.*;
 
+import java.lang.String;
+
 public class ShowTreeVisitor implements AbsynVisitor {
 
   final static int SPACES = 4;
@@ -87,7 +89,7 @@ public class ShowTreeVisitor implements AbsynVisitor {
 
   public void visit( VarExp exp, int level ) {
     indent( level );
-    System.out.println( "VarExp: " + exp.name );
+    System.out.println( "VarExp: " + exp.value );
   }
 
   public void visit( WriteExp exp, int level ) {
@@ -96,4 +98,71 @@ public class ShowTreeVisitor implements AbsynVisitor {
     exp.output.accept( this, ++level );
   }
 
+  public void visit( NameTy t, int level ) {
+    indent( level );
+    System.out.println( "NameTy: " + String.valueOf(t.type));
+  }
+
+  public void visit( VarDecList varDecList, int level ) {
+    while( varDecList != null ) {
+      varDecList.head.accept( this, level );
+      varDecList = varDecList.tail;
+    } 
+  }
+
+  public void visit( DecList decList, int level ) {
+    while( decList != null ) {
+      decList.head.accept( this, level );
+      decList = decList.tail;
+    } 
+  }
+
+  public void visit( ArrayDec arr, int level) {
+    indent( level );
+    System.out.println( "ArrayDec: " + String.valueOf(arr.type) + " " + String.valueOf(arr.name));
+    arr.size.accept( this, ++level );
+  }
+
+  public void visit( SimpleDec dec, int level ) {
+    indent( level );
+    System.out.println( "ArrayDec: " + String.valueOf(dec.name));
+    dec.type.accept( this, ++level );
+  }
+
+  public void visit ( FunctionDec dec, int level ) {
+
+  }
+
+  public void visit ( CompoundExp exp, int level ) {
+
+  }
+
+  public void visit ( ReturnExp exp, int level ) {
+
+  }
+
+
+  public void visit ( WhileExp exp, int level ) {
+
+  }
+
+  public void visit ( CallExp exp, int level ) {
+
+  }
+
+  public void visit ( NilExp exp, int level ) {
+
+  }
+
+  public void visit ( EpsilonExp exp, int level ) {
+
+  }
+
+  public void visit ( IndexVar var, int level ) {
+
+  }
+
+  public void visit ( SimpleVar var, int level ) {
+
+  }
 }
