@@ -1,0 +1,20 @@
+package absyn;
+
+public class CompoundExp extends Exp {
+    public int row;
+    public int col;
+    public VarDecList decs;
+    public ExpList exps;
+
+    public CompoundExp( int row, int col, VarDecList decs, ExpList exps ) {
+      this.row = row;
+      this.col = col;
+      this.decs = decs;
+      this.exps = exps;
+    }
+
+    public void accept( AbsynVisitor visitor, int level ) {
+      visitor.visit( this, level );
+    }
+}
+

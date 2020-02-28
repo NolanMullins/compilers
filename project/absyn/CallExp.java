@@ -1,12 +1,14 @@
 package absyn;
 
-public class IntExp extends Exp {
-  public String value;
+public class CallExp extends Exp {
+  public String func;
+  public ExpList args;
 
-  public IntExp( int row, int col, String value ) {
+  public IntExp( int row, int col, String func, ExpList args ) {
     this.row = row;
     this.col = col;
-    this.value = value;
+    this.func = func;
+    this.args = args;
   }
 
   public void accept( AbsynVisitor visitor, int level ) {

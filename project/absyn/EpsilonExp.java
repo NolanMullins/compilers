@@ -1,12 +1,10 @@
 package absyn;
 
-public class IntExp extends Exp {
-  public String value;
+public class EpsilonExp extends Exp {
 
-  public IntExp( int row, int col, String value ) {
+  public EpsilonExp( int row, int col ) {
     this.row = row;
     this.col = col;
-    this.value = value;
   }
 
   public void accept( AbsynVisitor visitor, int level ) {
