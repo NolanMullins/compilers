@@ -19,11 +19,17 @@ parser.java: cm.cup
 	#$(CUP) -dump -expect 3 tiny.cup
 	$(CUP) -expect 3 cm.cup
 
-tiny:
-	java $(CLASSPATH) Main fac.tiny
-
 test:
 	java $(CLASSPATH) Main data/simple.cm
+
+sample1:
+	java $(CLASSPATH) Main data/sample1.cm
+
+sample2:
+	java $(CLASSPATH) Main data/sample2.cm
+
+sample3:
+	java $(CLASSPATH) Main data/sample3.cm
 
 clean:
 	rm -f parser.java Lexer.java sym.java *.class absyn/*.class *~
