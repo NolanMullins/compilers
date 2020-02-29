@@ -334,20 +334,15 @@ mulop       ::= TIMES
                 {: RESULT = OpExp.DIV; :}
             ;
 
-/* 26. Factor  */
+/* Combined Rule 27 into rule 26*/
 factor      ::= LPAREN:l exp:e RPAREN:r
                 {: RESULT = e; :}
             |   var:v
                 {: RESULT = new VarExp(vleft, vright, v); :}
-            |   call:c
-                {: RESULT = c; :}
+            |   ID:i LPAREN args:a RPAREN
+                {: RESULT = new CallExp(ileft, iright, i, a); :}
             |   NUM:n
                 {: RESULT = new IntExp(nleft, nright, n); :}
-            ;
-
-/* 27. Call  */
-call        ::= ID:i LPAREN args:a RPAREN
-                {: RESULT = new CallExp(ileft, iright, i, a); :}
             ;
 
 /* 28. Arguments  */
