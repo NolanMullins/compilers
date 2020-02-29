@@ -350,16 +350,12 @@ call        ::= ID:i LPAREN args:a RPAREN
                 {: RESULT = new CallExp(ileft, iright, i, a); :}
             ;
 
-/*todo: this is nothing - which will be an epsilon transition, not sure if this is right*/
 /* 28. Arguments  */
-args        ::= arg_list:a
-                {: RESULT = a; :}
-            |   
-                {: RESULT = new ExpList(null, null); :}
-            ;
-
 /* 29. Argument List  */
-arg_list    ::= arg_list:a COMMA exp:e
+/* Combined Rules 28 and 29 */
+args        ::= args:a
+                {: RESULT = a; :}
+            |   args:a COMMA exp:e
                 {: 
                     ExpList l = a;
                     if (l.head == null) {
@@ -373,4 +369,7 @@ arg_list    ::= arg_list:a COMMA exp:e
                 :}
             |   exp:e
                 {: RESULT = new ExpList(e, null); :}
+            |   
+                {: RESULT = new ExpList(null, null); :}
             ;
+
