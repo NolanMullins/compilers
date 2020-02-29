@@ -3,6 +3,7 @@ int x;
 void add (int x, int y) {
     int res;
     res = a + b;
+    res = a = b + a;
     return res;
 }
 

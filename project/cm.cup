@@ -80,7 +80,7 @@ terminal ERROR;
 non terminal DecList dec_seq, program;
 non terminal VarDecList local_decs, param_seq, params;
 non terminal ExpList stmt_list, args;
-non terminal Exp stmt, add_exp;
+non terminal Exp stmt, add_exp, simple_exp;
 non terminal Exp exp, term, factor;
 non terminal CompoundExp cmpd_stmt;
 non terminal Dec dec;
@@ -246,7 +246,11 @@ stmt          ::= exp:e SEMI:s
 /* Combined Rule 20 into rule 18*/
 exp           ::= var:v ASSIGN exp:e
                   {: RESULT = new AssignExp(vleft, vright, v, e); :}
-              |   add_exp:a1 relop:r add_exp:a2
+              |   simple_exp:s
+                  {: RESULT = s; :}
+              ;
+
+simple_exp   ::= add_exp:a1 relop:r add_exp:a2
                   {: RESULT = new OpExp(a1left, a1right, a1, r, a2); :}
               |   add_exp:a
                   {: RESULT = a; :}
