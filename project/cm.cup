@@ -87,7 +87,7 @@ non terminal Dec dec;
 non terminal Var var;
 non terminal VarDec dec_var, param; 
 non terminal NameTy type_spec;
-non terminal Integer relop, addop, mulop;
+non terminal Integer relop, addop, mulop, op;
 
 /* to add */
 /* type_spec */
@@ -250,10 +250,17 @@ exp           ::= var:v ASSIGN exp:e
                   {: RESULT = s; :}
               ;
 
-simple_exp   ::= add_exp:a1 relop:r add_exp:a2
+simple_exp   ::=  add_exp:a1 relop:r add_exp:a2
                   {: RESULT = new OpExp(a1left, a1right, a1, r, a2); :}
               |   add_exp:a
                   {: RESULT = a; :}
+              ;
+
+/* 22. Additive Expression */
+add_exp       ::= add_exp:e op:a factor:t
+                  {: RESULT = new OpExp(eleft, eright, e, a, t); :}
+              |   factor:t
+                  {: RESULT = t; :}
               ;
 
 /* 19. Variable */
@@ -278,29 +285,12 @@ relop       ::= LTE
                 {: RESULT = OpExp.NE; :}
             ;
 
-/* 22. Additive Expression */
-add_exp       ::= add_exp:e addop:a term:t
-                  {: RESULT = new OpExp(eleft, eright, e, a, t); :}
-              |   term:t
-                  {: RESULT = t; :}
-              ;
 
-/* 23. Addition / Subtraction Operation */
-addop       ::= PLUS
+op          ::= PLUS
                 {: RESULT = OpExp.PLUS; :}
             |   MINUS
                 {: RESULT = OpExp.MINUS; :}
-            ;
-
-/* 24. Term */
-term        ::= term:t mulop:m factor:f
-                {: RESULT = new OpExp(tleft, tright, t, m, f); :}
-            |   factor:f
-                {: RESULT = f; :}
-            ;
-
-/* 25. Multiplication / Division Operation */
-mulop       ::= TIMES
+            |   TIMES
                 {: RESULT = OpExp.MUL; :}
             |   OVER
                 {: RESULT = OpExp.DIV; :}
