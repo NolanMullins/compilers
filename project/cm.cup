@@ -1,10 +1,3 @@
-/*
-  Created by: Fei Song
-  File Name: tiny.cup
-  To Build: java java_cup.Main < tiny.cup
-*/
-   
-   
 /* ----------------------Preliminary Declarations Section--------------------*/
    
 /* Import the class java_cup.runtime.*  */
@@ -89,11 +82,6 @@ non terminal VarDec dec_var, param;
 non terminal NameTy type_spec;
 non terminal Integer relop, op;
 
-/* to add */
-/* type_spec */
-
-/*todo add all new non terminals*/
-
 /* ----------------------------Grammar Section-------------------- */
    
 start with program;
@@ -118,10 +106,10 @@ dec_seq         ::= dec_seq:s1 dec:s2
                     :}
                 |   dec:s 
                     {: RESULT = new DecList(s, null); :}
-                |   error:e SEMI dec:s
+                |   error:e SEMI
                     {: 
-                        parser.report_error("invalid decleration near "+s, null); 
-                        RESULT = new DecList(s, null); 
+                        parser.report_error("invalid decleration", null); 
+                        RESULT = new DecList(null, null); 
                     :}
                ;
 
@@ -181,6 +169,8 @@ param           ::= type_spec:t ID:i
 /* 10. Compound Statement */
 cmpd_stmt       ::= THEN:t local_decs:l stmt_list:s END:e
                     {: RESULT = new CompoundExp(tleft, tright, l, s); :}
+                | THEN:t error END:e
+                    {: RESULT = new CompoundExp(tleft, tright, null, null); :}
                 ;
 
 /* 11. Local Declarations */
@@ -239,7 +229,13 @@ stmt          ::= exp:e SEMI:s
                   {: RESULT = new ReturnExp(rleft, rright, e); :}
               |   RETURN:r SEMI
                   {: RESULT = new ReturnExp(rleft, rright, null); :}
+              |   error:e SEMI:s
+                  {:
+                    parser.report_error("invalid statement", null); 
+                    RESULT = new EpsilonExp(sleft, sright); 
+                  :}  
               ;
+              
 
 /* 18. Expression */
 /* 20. Simple Expression */

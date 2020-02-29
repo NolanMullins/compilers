@@ -159,8 +159,10 @@ public class ShowTreeVisitor implements AbsynVisitor {
     public void visit(CompoundExp exp, int level) {
         indent(level);
         System.out.println("CompoundExp: ");
-        exp.decs.accept(this, ++level);
-        exp.exps.accept(this, ++level);
+        if (exp.decs != null)
+            exp.decs.accept(this, ++level);
+        if (exp.exps != null)
+            exp.exps.accept(this, ++level);
     }
 
     public void visit(ReturnExp e, int level) {
