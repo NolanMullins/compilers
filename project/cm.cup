@@ -271,10 +271,14 @@ ret_stmt      ::= RETURN:r exp:e SEMI
               ;
 
 /* 18. Expression */
+/* 20. Simple Expression */
+/* Combined Rule 20 into rule 18*/
 exp           ::= var:v ASSIGN exp:e
                   {: RESULT = new AssignExp(vleft, vright, v, e); :}
-              |   sim_exp:s
-                  {: RESULT = s; :}
+              |   add_exp:a1 relop:r add_exp:a2
+                  {: RESULT = new OpExp(a1left, a1right, a1, r, a2); :}
+              |   add_exp:a
+                  {: RESULT = a; :}
               ;
 
 /* 19. Variable */
@@ -282,13 +286,6 @@ var           ::= ID:i
                   {: RESULT = new SimpleVar(ileft, iright, i); :}
               |   ID:i LSQBRK exp:e RSQBRK
                   {: RESULT = new IndexVar(ileft, iright, i, e); :}
-              ;
-
-/* 20. Simple Expression */
-sim_exp       ::= add_exp:a1 relop:r add_exp:a2
-                  {: RESULT = new OpExp(a1left, a1right, a1, r, a2); :}
-              |   add_exp:a
-                  {: RESULT = a; :}
               ;
 
 /* 21. Relative Operation */
@@ -334,6 +331,8 @@ mulop       ::= TIMES
                 {: RESULT = OpExp.DIV; :}
             ;
 
+/* 26. Factor  */
+/* 27. Call  */
 /* Combined Rule 27 into rule 26*/
 factor      ::= LPAREN:l exp:e RPAREN:r
                 {: RESULT = e; :}
