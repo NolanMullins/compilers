@@ -3,6 +3,31 @@ int x;
 void add (int x, int y) {
     int res;
     res = a + b;
+    /*error*/
+    res = a + b = b + a;
+    return res;
+}
+
+void add (int x, int y) {
+    /*error*/
+    int res = 10;
+    res = a + b;
+    res = a = b + a;
+    return res;
+}
+
+void add (int x, int y) {
+    /*error*/
+    String res;
+    res = a + b;
+    res = a = b + a;
+    return res;
+}
+
+/*no error*/
+void add (int x, int y) {
+    int res;
+    res = a + b;
     res = a = b + a;
     return res;
 }

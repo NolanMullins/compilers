@@ -80,14 +80,14 @@ terminal ERROR;
 non terminal DecList dec_seq, program;
 non terminal VarDecList local_decs, param_seq, params;
 non terminal ExpList stmt_list, args;
-non terminal Exp stmt, add_exp, simple_exp;
-non terminal Exp exp, term, factor;
+non terminal Exp stmt, com_exp, simple_exp;
+non terminal Exp exp, factor;
 non terminal CompoundExp cmpd_stmt;
 non terminal Dec dec;
 non terminal Var var;
 non terminal VarDec dec_var, param; 
 non terminal NameTy type_spec;
-non terminal Integer relop, addop, mulop, op;
+non terminal Integer relop, op;
 
 /* to add */
 /* type_spec */
@@ -118,7 +118,7 @@ dec_seq         ::= dec_seq:s1 dec:s2
                     :}
                 |   dec:s 
                     {: RESULT = new DecList(s, null); :}
-                |   error SEMI dec:s
+                |   error:e SEMI dec:s
                     {: 
                         parser.report_error("invalid decleration near "+s, null); 
                         RESULT = new DecList(s, null); 
@@ -250,18 +250,31 @@ exp           ::= var:v ASSIGN exp:e
                   {: RESULT = s; :}
               ;
 
-simple_exp   ::=  add_exp:a1 relop:r add_exp:a2
+simple_exp   ::=  com_exp:a1 relop:r com_exp:a2
                   {: RESULT = new OpExp(a1left, a1right, a1, r, a2); :}
-              |   add_exp:a
+              |   com_exp:a
                   {: RESULT = a; :}
               ;
 
-/* 22. Additive Expression */
-add_exp       ::= add_exp:e op:a factor:t
+/* 22. Combine Expression */
+com_exp       ::= com_exp:e op:a factor:t
                   {: RESULT = new OpExp(eleft, eright, e, a, t); :}
               |   factor:t
                   {: RESULT = t; :}
               ;
+
+/* 26. Factor  */
+/* 27. Call  */
+/* Combined Rule 27 into rule 26*/
+factor      ::= LPAREN:l exp:e RPAREN:r
+                {: RESULT = e; :}
+            |   var:v
+                {: RESULT = new VarExp(vleft, vright, v); :}
+            |   ID:i LPAREN args:a RPAREN
+                {: RESULT = new CallExp(ileft, iright, i, a); :}
+            |   NUM:n
+                {: RESULT = new IntExp(nleft, nright, n); :}
+            ;
 
 /* 19. Variable */
 var           ::= ID:i
@@ -285,7 +298,6 @@ relop       ::= LTE
                 {: RESULT = OpExp.NE; :}
             ;
 
-
 op          ::= PLUS
                 {: RESULT = OpExp.PLUS; :}
             |   MINUS
@@ -294,19 +306,6 @@ op          ::= PLUS
                 {: RESULT = OpExp.MUL; :}
             |   OVER
                 {: RESULT = OpExp.DIV; :}
-            ;
-
-/* 26. Factor  */
-/* 27. Call  */
-/* Combined Rule 27 into rule 26*/
-factor      ::= LPAREN:l exp:e RPAREN:r
-                {: RESULT = e; :}
-            |   var:v
-                {: RESULT = new VarExp(vleft, vright, v); :}
-            |   ID:i LPAREN args:a RPAREN
-                {: RESULT = new CallExp(ileft, iright, i, a); :}
-            |   NUM:n
-                {: RESULT = new IntExp(nleft, nright, n); :}
             ;
 
 /* 28. Arguments  */
