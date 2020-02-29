@@ -90,7 +90,8 @@ public class ShowTreeVisitor implements AbsynVisitor {
 
     public void visit(VarExp exp, int level) {
         indent(level);
-        System.out.println("VarExp: " + exp.value);
+        System.out.println("VarExp: ");
+        exp.value.accept(this, level);
     }
 
     public void visit(WriteExp exp, int level) {
