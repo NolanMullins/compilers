@@ -79,11 +79,11 @@ terminal ERROR;
 /*non terminal Exp program1;*/
 non terminal DecList dec_seq, program;
 non terminal VarDecList local_decs, param_seq, params;
-non terminal ExpList stmt_list, arg_list, args;
-non terminal Exp stmt, exp_stmt, ret_stmt, call, add_exp, sim_exp;
-non terminal Exp exp, term, factor, sel_stmt, iter_stmt;
+non terminal ExpList stmt_list, args;
+non terminal Exp stmt, add_exp;
+non terminal Exp exp, term, factor;
 non terminal CompoundExp cmpd_stmt;
-non terminal Dec dec, dec_fun;
+non terminal Dec dec;
 non terminal Var var;
 non terminal VarDec dec_var, param; 
 non terminal NameTy type_spec;
@@ -125,14 +125,15 @@ dec_seq         ::= dec_seq:s1 dec:s2
                     :}
                ;
 
-/* 3. Declaration  */
+/* 6. Function Declaration */
+/* 3. Declarations */
 dec             ::= dec_var: v
                     {: RESULT = v; :}
-                |   dec_fun: f
-                    {: RESULT = f; :}
+                |   type_spec:t ID:i LPAREN params:p RPAREN cmpd_stmt:c
+                    {: RESULT = new FunctionDec(tleft, tright, t, i, p, c); :}
                 ;
 
-/* 4. Variable Declaration  */
+/* 4. Variable Declaration, used by dec and local_decs */
 dec_var         ::= type_spec:t ID:i SEMI
                     {: RESULT = new SimpleDec(tleft, tright, t, i); :}
                 |   type_spec:t ID:i LSQBRK NUM:n RSQBRK SEMI
@@ -144,11 +145,6 @@ type_spec       ::= INT:i
                     {: RESULT = new NameTy(ileft, iright, NameTy.INT); :}
                 |   VOID:v
                     {: RESULT = new NameTy(vleft, vright, NameTy.VOID); :}
-                ;
-
-/* 6. Function Declaration  */
-dec_fun         ::= type_spec:t ID:i LPAREN params:p RPAREN cmpd_stmt:c
-                    {: RESULT = new FunctionDec(tleft, tright, t, i, p, c); :}
                 ;
 
 /* 7. Paramaters  */
@@ -175,7 +171,6 @@ param_seq       ::= param_seq:s COMMA param:p
                     {: RESULT = new VarDecList(p, null); :}
                 ;
 
-/* TODO, figure what to put for array size, maybe it should be included in param? */
 /* 9. Parameter  */
 param           ::= type_spec:t ID:i 
                     {: RESULT = new SimpleDec(tleft, tright, t, i); :}
@@ -188,7 +183,6 @@ cmpd_stmt       ::= THEN:t local_decs:l stmt_list:s END:e
                     {: RESULT = new CompoundExp(tleft, tright, l, s); :}
                 ;
 
-/*todo: epsilon transition here, probably just NULL or an VarDecList(NULL, NULL) */ 
 /* 11. Local Declarations */
 local_decs      ::= local_decs:l dec_var:d
                     {: 
@@ -206,7 +200,6 @@ local_decs      ::= local_decs:l dec_var:d
                     {: RESULT = new VarDecList(null, null); :}
                 ;
 
-/*todo: this is nothing - which will be an epsilon transition, could put epsilonExp()? */
 /* 12. Statement List */
 stmt_list       ::= stmt_list:l stmt:s
                     {: 
@@ -325,9 +318,7 @@ factor      ::= LPAREN:l exp:e RPAREN:r
 /* 28. Arguments  */
 /* 29. Argument List  */
 /* Combined Rules 28 and 29 */
-args        ::= args:a
-                {: RESULT = a; :}
-            |   args:a COMMA exp:e
+args        ::= args:a COMMA exp:e
                 {: 
                     ExpList l = a;
                     if (l.head == null) {
