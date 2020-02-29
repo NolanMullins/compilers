@@ -225,46 +225,24 @@ stmt_list       ::= stmt_list:l stmt:s
                 ;
 
 /* 13. Statement */
-stmt          ::= exp_stmt:e
-                  {: RESULT = e; :}
-              |   cmpd_stmt:c
-                  {: RESULT = c; :}
-              |   sel_stmt:s
-                  {: RESULT = s; :}
-              |   iter_stmt:i
-                  {: RESULT = i; :}
-              |   ret_stmt:r
-                  {: RESULT = r; :}
-              ;
-
 /* 14. Expression Statement */
-exp_stmt      ::= exp:e SEMI:s
+/* 15. Selection Statement */
+/* 16. Iteration Statement */
+/* 17. Return Statement */
+/* Combined Rule 14, 15, 16, 17 into rule 13*/
+stmt          ::= exp:e SEMI:s
                   {: RESULT = e; :}
               |   SEMI:s
                   {: RESULT = new EpsilonExp(sleft, sright); :}
-              ;
-
-/* 15. Selection Statement */
-sel_stmt      ::= IF:i LPAREN exp:e RPAREN stmt:s
+              |   cmpd_stmt:c
+                  {: RESULT = c; :}
+              |   IF:i LPAREN exp:e RPAREN stmt:s
                   {: RESULT = new IfExp(ileft, iright, e, s, null); :}
               |   IF:i LPAREN exp:e RPAREN stmt:s1 ELSE stmt:s2
                   {: RESULT = new IfExp(ileft, iright, e, s1, s2); :}
-              ;
-
-/* Is this needed? */
-/* While Statment we will need for other rules
-while_stmt    ::= REPEAT:r LPAREN exp:e RPAREN THEN stmt_seq:s END
-                  {: RESULT = new WhileExp(rleft, rright, e, s); :}
-              ;
-*/
-
-/* 16. Iteration Statement */
-iter_stmt     ::= WHILE:w LPAREN exp:e RPAREN stmt:s
-                {: RESULT = new WhileExp(wleft, wright, e, s); :}
-              ;
-
-/* 17. Return Statement */
-ret_stmt      ::= RETURN:r exp:e SEMI
+              |   WHILE:w LPAREN exp:e RPAREN stmt:s
+                  {: RESULT = new WhileExp(wleft, wright, e, s); :}
+              |   RETURN:r exp:e SEMI
                   {: RESULT = new ReturnExp(rleft, rright, e); :}
               |   RETURN:r SEMI
                   {: RESULT = new ReturnExp(rleft, rright, null); :}
