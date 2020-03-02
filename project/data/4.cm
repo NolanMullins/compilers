@@ -1,3 +1,8 @@
+/* A larger cm program, has if statements, more function calls, more complicated expressions  */
+
+/*error, invalid statement following a function declaration*/
+int binTree(int bin, int len, int size, int ones, int max, int m);
+
 /* 
  * accepts a string and a section, copies everything from that section into newString
  */
@@ -29,21 +34,20 @@ int getPos(int start, int string, int search)
     int a;
     if (string == NULL)
     {
-        return 1;
-    }
-    
+        return 9999;
+    } else {
+        strLen = strlen(string);
+        a = start;
 
-    strLen = strlen(string);
-    a = start;
-
-    /*loop through the string*/
-    while (a < strLen) {
-        if (string[a] == search)
-        {
-            return a;
+        /*loop through the string*/
+        while (a < strLen) {
+            if (string[a] == search)
+            {
+                return a;
+            }
         }
     }
-    return 1;
+    return 9999;
 }
 
 /*Accepts a string and the starting point of the number, returns the number attached. Looking back this is horrible LOL */

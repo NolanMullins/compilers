@@ -1,3 +1,5 @@
+/* This program was built to test how far the expressions could go */
+
 /*This is a stripped down version of the invSqrt*/
 int Q_rsqrt( int number )
 {
@@ -18,4 +20,9 @@ int Q_rsqrt( int number )
 
 int invSqrt( int number ) {
     return 1 / sqrt(number);
+}
+
+void function (int param, int param2) 
+{
+    return a = array[(thisFunction((a/testVar+(((((((thisHurts + please + make + it + stop[(_ISTHIS/ALLOWED/what/is/happening[rip[cup[file*this[has[to[break[somewhere(hello, this, is, going(10) * to + hurt(one/two))]]]]]]])])))))))))*b)+1/(c[(x*2/3)])] > 10;
 }

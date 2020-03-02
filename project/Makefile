@@ -20,13 +20,17 @@ parser.java: cm.cup
 	$(CUP) -expect 3 cm.cup
 
 test:
-	java $(CLASSPATH) Main data/test1.cm
-	java $(CLASSPATH) Main data/test2.cm
-	java $(CLASSPATH) Main data/test3.cm
-	java $(CLASSPATH) Main data/test4.cm
+	java $(CLASSPATH) Main data/1.cm
+	java $(CLASSPATH) Main data/2.cm
+	java $(CLASSPATH) Main data/3.cm
+	java $(CLASSPATH) Main data/4.cm
+	java $(CLASSPATH) Main data/5.cm
 
-error:
-	java $(CLASSPATH) Main data/error.cm
+break:
+	java $(CLASSPATH) Main data/3.cm
+
+run:
+	java $(CLASSPATH) Main data/5.cm
 
 sample1:
 	java $(CLASSPATH) Main data/sample1.cm

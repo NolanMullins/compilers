@@ -1,3 +1,5 @@
+/* 3.cm has loops, arrays, function calls */
+
 /****************************************
  * Nolan Mullins
  * 0939720
@@ -5,18 +7,14 @@
  * cis3150 - A2
  ****************************************/
  
-int binTree(int bin, int len, int size, int ones, int max, int m) {}
-
 void error(int msg)
-{
+{    
 	printf(msg);
 	exit(1);
 }
 
 void printBS(int bin[], int len, int n)
 {
-    int i;
-    i = 0;
     while (i < len) {
         print(bin[i]);
         i = i + 1;
@@ -28,11 +26,25 @@ void printBS(int bin[], int len, int n)
 }
     
 void main(void) {
+
     int x[10];
     x[0] = 1;
     x[1] = 0;
     x[2] = 1;
     x[3] = 0;
+    
     print(x, 4, 10);
 }
 
+void thisIsNotAFunction(int rip, int cup) {
+    int x; int y;
+    x = 10;
+    y = 11;
+
+    /* declaring a variable after expressions */
+    int z; 
+    if (x > y) {
+        z = x;
+        return z;
+    }
+}

@@ -169,7 +169,7 @@ param           ::= type_spec:t ID:i
 /* 10. Compound Statement */
 cmpd_stmt       ::= THEN:t local_decs:l stmt_list:s END:e
                     {: RESULT = new CompoundExp(tleft, tright, l, s); :}
-                | THEN:t error END:e
+                |   THEN:t error END:e
                     {: RESULT = new CompoundExp(tleft, tright, null, null); :}
                 ;
 
