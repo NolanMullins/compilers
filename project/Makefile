@@ -25,9 +25,6 @@ test:
 	java $(CLASSPATH) Main data/4.cm
 	java $(CLASSPATH) Main data/5.cm
 
-break:
-	java $(CLASSPATH) Main data/3.cm
-
 
 run:
 	java $(CLASSPATH) Main data/5.cm
