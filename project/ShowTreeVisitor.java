@@ -168,8 +168,8 @@ public class ShowTreeVisitor implements AbsynVisitor {
     public void visit(ReturnExp e, int level) {
         indent(level);
         System.out.println("ReturnExp: ");
-
-        e.exp.accept(this, ++level);
+        if (e.exp != null)
+            e.exp.accept(this, ++level);
     }
 
     public void visit(WhileExp exp, int level) {

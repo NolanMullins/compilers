@@ -1,0 +1,21 @@
+/*This is a stripped down version of the invSqrt*/
+int Q_rsqrt( int number )
+{
+    int i;
+    int x2; int y;
+    int threehalfs;
+    threehalfs = 3/2;
+
+    x2 = number * 1/2;
+    y  = number;
+    i  = ( long ) * y;
+    i  = _0x5f3759df - ( i + 1 );
+    y  =  ( float ) * i;
+    y  = y * ( threehalfs - ( x2 * y * y ) );
+
+    return y;
+}
+
+int invSqrt( int number ) {
+    return 1 / sqrt(number);
+}

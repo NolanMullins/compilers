@@ -1,0 +1,38 @@
+/****************************************
+ * Nolan Mullins
+ * 0939720
+ * 2018-10-07
+ * cis3150 - A2
+ ****************************************/
+ 
+int binTree(int bin, int len, int size, int ones, int max, int m) {}
+
+void error(int msg)
+{
+	printf(msg);
+	exit(1);
+}
+
+void printBS(int bin[], int len, int n)
+{
+    int i;
+    i = 0;
+    while (i < len) {
+        print(bin[i]);
+        i = i + 1;
+    }
+    while (i < n) {
+        print(bin[i]);
+        i = i + 1;
+    }
+}
+    
+void main(void) {
+    int x[10];
+    x[0] = 1;
+    x[1] = 0;
+    x[2] = 1;
+    x[3] = 0;
+    print(x, 4, 10);
+}
+

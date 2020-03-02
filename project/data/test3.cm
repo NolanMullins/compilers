@@ -1,0 +1,78 @@
+/* 
+ * accepts a string and a section, copies everything from that section into newString
+ */
+void subString(int oldString, int newString, int start, int end)
+{   
+    int loop; int a;
+
+    if (oldString == NULL)
+        return;
+    if (newString == NULL)
+        return;
+
+
+    loop = 0;
+    a = start;
+    while (a < end) {
+        newString[loop] = oldString[a];
+        a = a + 1;
+        a = loop + 1;
+    }
+}
+
+/*
+ * Accepts a string and a character and return the position of the first pos
+ */
+int getPos(int start, int string, int search)
+{    
+    int strLen;
+    int a;
+    if (string == NULL)
+    {
+        return 1;
+    }
+    
+
+    strLen = strlen(string);
+    a = start;
+
+    /*loop through the string*/
+    while (a < strLen) {
+        if (string[a] == search)
+        {
+            return a;
+        }
+    }
+    return 1;
+}
+
+/*Accepts a string and the starting point of the number, returns the number attached. Looking back this is horrible LOL */
+int parseNumber(int string, int start)
+{
+    int number[32];
+    int a;
+    int num;
+    int multi;
+    a = start;
+    num = 0;
+    multi = 1;
+    
+    memset(number, 0, 32);
+    
+    /*loop while there is another digit to be read*/
+    while (isdigit(string[a]))
+    {
+        number[a-start] = string[a];
+        a = a + 1;
+    }
+
+    /*reverse their order*/
+    a = a - start-1;
+    while (a >= 0)
+    {
+        num = num + multi*(number[a] - 0);
+        multi = multi * 10;
+        a = a + 1;
+    }
+    return num;
+}

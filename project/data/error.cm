@@ -3,6 +3,7 @@ int x;
 
 void add (int x, int y) {
     int res;
+    /*error*/
     res = 借;
     res = a + b;
     /*error*/
