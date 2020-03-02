@@ -1,11 +1,26 @@
-/* 3.cm has loops, arrays, function calls */
+/*3.cm has loops, arrays, function calls*/
 
-/****************************************
+/* ***************************************
  * Nolan Mullins
  * 0939720
  * 2018-10-07
  * cis3150 - A2
- ****************************************/
+ *************************************** */
+
+void thisIsNotAFunction(int rip, int cup) {
+    int x; int y;
+    /*error invalid type*/
+    String test;
+    x = 10;
+    y = 11;
+
+    /*error, declaring variable after expressions*/
+    int z; 
+    if (x > y) {
+        z = x;
+        return z;
+    }
+}
  
 void error(int msg)
 {    
@@ -36,15 +51,3 @@ void main(void) {
     print(x, 4, 10);
 }
 
-void thisIsNotAFunction(int rip, int cup) {
-    int x; int y;
-    x = 10;
-    y = 11;
-
-    /* declaring a variable after expressions */
-    int z; 
-    if (x > y) {
-        z = x;
-        return z;
-    }
-}
