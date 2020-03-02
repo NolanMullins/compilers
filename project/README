@@ -7,8 +7,9 @@
 **********************************
 Problem
 **********************************
-todo
-
+Build a program to take in a C- file and parse it down in to an 
+abstract syntax tree
+TODO
 
 *******
 Setup
@@ -28,13 +29,13 @@ make
 *******
 Running
 *******
-todo
+java -classpath /usr/share/java/cup.jar:. <file>
 
 
 **********************************
 Test plan
 **********************************
-todo
+TODO
 
 
 **********************************
