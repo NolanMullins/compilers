@@ -8,8 +8,9 @@
 Problem
 **********************************
 Build a program to take in a C- file and parse it down in to an 
-abstract syntax tree
-TODO
+abstract syntax tree, print the tree to stdout in an indented, 
+readable format.
+
 
 *******
 Setup
@@ -18,7 +19,6 @@ sudo apt update
 sudo apt install openjdk-8-jdk openjdk-8-jre
 sudo apt install jflex
 sudo apt install cup
-
 
 *******
 Compile
@@ -35,10 +35,40 @@ java -classpath /usr/share/java/cup.jar:. <file>
 **********************************
 Test plan
 **********************************
-TODO
+We used an incremental development strategy, slowly 
+introducing more complex C- programs for parsing.
+We started with basic single declarations, then introduced
+function declarations and comments. Once this foundation
+was in place we began to increase the complexity of functions
+and assignments. 
+
+Test Cases:
+1.cm
+    - Basic, single line comment
+    - Function and variable declarations
+
+2.cm
+    - Multi-line comments
+    - Multiple functions with parameters
+    - Embedded comments 
+    - Function calls
+
+3.cm
+    - Arrays
+    - If statements
+    - While loops
+
+4.cm
+    - Larger file with more complexity
+
+5.cm
+    - An attempt to kill the expression parsing 
+
+We also tested our program against the sample files provided.
+
 
 
 **********************************
 Acknowledgements
 **********************************
-I used the provided example files 
+We used the provided example files 
