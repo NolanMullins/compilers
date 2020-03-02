@@ -109,11 +109,6 @@ identifier = [_a-zA-Z][_a-zA-Z0-9]*
 "void"              { return symbol(sym.VOID); }
 "int"               { return symbol(sym.INT); }
 
-/* Don't need, delete?
-"read"              { return symbol(sym.READ); }
-"write"             { return symbol(sym.WRITE); }
-*/
-
 "="                 { return symbol(sym.ASSIGN); }
 "=="                { return symbol(sym.EQ); }
 "<"                 { return symbol(sym.LT); }
