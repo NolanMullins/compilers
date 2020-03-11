@@ -1,8 +1,45 @@
 import absyn.*;
 
 import java.lang.String;
+import java.util.ArrayList;
 
 public class SemanticAnalyzer implements AbsynVisitor {
+
+    private int depth;
+    private HashMap<String, ArrayList<DecEntry>> symtable;
+
+    class DefEntry {String name; Dec def; int depth;}
+
+    public SemanticAnalyzer() {
+        depth = 0;
+        symtable = new HashMap<>();
+    }
+
+    /*
+    //Add new scope
+    DefEntry entry = new DefEntry(name, def, depth);
+    ArrayList<DefEntry> entries = new ArrayList<>()l
+    entries.add(entry);
+    symtable.put(name, entries);
+
+
+
+    //His hashtable / symtable: 
+    //Basically is a map of current accessible variables
+    //When entering a new block we increment our depth
+    //Add any new declarations to the map (with current  depth)
+    //When leave a scope remove all declarations with the current depth
+    //Reduce depth by 1 
+
+    //Checking scope ex
+    String name;
+    if (symtable.contains(name)) {
+        ArrayList<DefEntry> entries = symtable.get(name);
+        //This will get us the highest depth accessible variable 
+        entries.get(enties.size()-1);
+    }
+    */
+
 
     final static int SPACES = 4;
 
