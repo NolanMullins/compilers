@@ -13,6 +13,13 @@
    
 import java.io.*;
 import absyn.*;
+
+//Helpful
+//Slide 12 in "8-TypeChecking"
+//C-Specification see Semantic Requirements
+
+//TODO 
+//Add -s cmd to show tree
    
 class Main {
   public final static boolean SHOW_TREE = false;
