@@ -2,7 +2,7 @@ import absyn.*;
 
 import java.lang.String;
 
-public class ShowTreeVisitor implements AbsynVisitor {
+public class SemanticAnalyzer implements AbsynVisitor {
 
     final static int SPACES = 4;
 
@@ -193,7 +193,6 @@ public class ShowTreeVisitor implements AbsynVisitor {
 
     public void visit(EpsilonExp exp, int level) {
         indent(level);
-        //System.out.println("EpsilonExp: ");
     }
 
     public void visit(IndexVar var, int level) {
