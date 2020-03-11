@@ -7,7 +7,7 @@ CUP=$(JAVA) $(CLASSPATH) java_cup.Main
 
 all: Main.class
 
-Main.class: absyn/*.java parser.java sym.java Lexer.java ShowTreeVisitor.java Scanner.java Main.java
+Main.class: absyn/*.java parser.java sym.java Lexer.java SemanticAnalyzer.java ShowTreeVisitor.java Scanner.java Main.java
 
 %.class: %.java
 	$(JAVAC) $(CLASSPATH)  $^
@@ -26,7 +26,7 @@ test:
 	java $(CLASSPATH) Main data/5.cm
 
 run:
-	java $(CLASSPATH) Main data/1.cm
+	java $(CLASSPATH) Main data/semanticTest.cm
 
 sample1:
 	java $(CLASSPATH) Main data/sample1.cm

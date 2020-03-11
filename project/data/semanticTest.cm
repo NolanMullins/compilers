@@ -1,0 +1,16 @@
+/*Basic c- program with some variables*/
+
+int a;
+
+void main(void) {
+    int b;
+    b = 1;
+    a = 1;
+    if (a == 1) {
+        
+    }
+}
+
+int function(int c) {
+    a = c;
+}

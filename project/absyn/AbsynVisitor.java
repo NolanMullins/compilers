@@ -26,7 +26,6 @@ public interface AbsynVisitor {
   public void visit( VarDecList exp, int level );
 
   public void visit( NameTy exp, int level );
-  public void visit( ReadExp exp, int level );
   public void visit( RepeatExp exp, int level );
   public void visit( WriteExp exp, int level );
 }

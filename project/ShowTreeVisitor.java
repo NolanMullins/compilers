@@ -74,12 +74,6 @@ public class ShowTreeVisitor implements AbsynVisitor {
         exp.right.accept(this, level);
     }
 
-    public void visit(ReadExp exp, int level) {
-        indent(level);
-        System.out.println("ReadExp:");
-        exp.input.accept(this, ++level);
-    }
-
     public void visit(RepeatExp exp, int level) {
         indent(level);
         System.out.println("RepeatExp:");
