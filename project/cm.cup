@@ -80,7 +80,13 @@ non terminal Dec dec;
 non terminal Var var;
 non terminal VarDec dec_var, param; 
 non terminal NameTy type_spec;
-non terminal Integer relop, op;
+non terminal Integer relop;
+
+/* Precedences */
+precedence left PLUS, MINUS;
+precedence left TIMES, OVER;
+precedence left error;
+precedence left ELSE;
 
 /* ----------------------------Grammar Section-------------------- */
    
@@ -253,8 +259,14 @@ simple_exp   ::=  com_exp:a1 relop:r com_exp:a2
               ;
 
 /* 22. Combine Expression */
-com_exp       ::= com_exp:e op:a factor:t
-                  {: RESULT = new OpExp(eleft, eright, e, a, t); :}
+com_exp       ::= com_exp:e PLUS:a com_exp:e2
+                  {: RESULT = new OpExp(eleft, eright, e, OpExp.PLUS, e2); :}
+              |   com_exp:e MINUS:a com_exp:e2
+                  {: RESULT = new OpExp(eleft, eright, e, OpExp.MINUS, e2); :}
+              |   com_exp:e TIMES:a com_exp:e2
+                  {: RESULT = new OpExp(eleft, eright, e, OpExp.MUL, e2); :}
+              |   com_exp:e OVER:a com_exp:e2
+                  {: RESULT = new OpExp(eleft, eright, e, OpExp.DIV, e2); :}
               |   factor:t
                   {: RESULT = t; :}
               ;
@@ -292,16 +304,6 @@ relop       ::= LTE
                 {: RESULT = OpExp.EQ; :}
             |   NE
                 {: RESULT = OpExp.NE; :}
-            ;
-
-op          ::= PLUS
-                {: RESULT = OpExp.PLUS; :}
-            |   MINUS
-                {: RESULT = OpExp.MINUS; :}
-            |   TIMES
-                {: RESULT = OpExp.MUL; :}
-            |   OVER
-                {: RESULT = OpExp.DIV; :}
             ;
 
 /* 28. Arguments  */

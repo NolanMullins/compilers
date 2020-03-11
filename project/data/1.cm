@@ -1,10 +1,6 @@
 /*Basic c- program with some variables*/
 
 void main(void) {
-    int x; 
-    int y;
-    int z;
-    x = 1;
-    y = 2;
-    z = x + y;
+    z = x + y * y;
+    z = x * y + y;
 }

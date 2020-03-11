@@ -26,7 +26,7 @@ test:
 	java $(CLASSPATH) Main data/5.cm
 
 run:
-	java $(CLASSPATH) Main data/5.cm
+	java $(CLASSPATH) Main data/1.cm
 
 sample1:
 	java $(CLASSPATH) Main data/sample1.cm
