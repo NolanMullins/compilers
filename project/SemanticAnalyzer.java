@@ -1,16 +1,27 @@
 import absyn.*;
 
 import java.lang.String;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 
 
-public class SemanticAnalyzer implements AbsynVisitor {
+public class SemanticAnalyzer implements AbsynVisitor 
+{
 
-    class DefEntry {String name; Dec def; int depth;}
+    class DecEntry 
+    {
+        String name; 
+        Dec dec; 
+        int depth;
+        public DecEntry(String name, Dec dec, int depth) 
+        {
+            this.name = name;
+            this.dec = dec;
+            this.depth = depth;
+        }
+    }
 
     private int depth;
-    private HashMap<String, ArrayList<DefEntry>> symtable;
+    private HashMap<String, ArrayList<DecEntry>> symtable;
 
 
     public SemanticAnalyzer() {
@@ -19,8 +30,8 @@ public class SemanticAnalyzer implements AbsynVisitor {
     }
 
     /*
-    //Add new scope
-    DefEntry entry = new DefEntry(name, def, depth);
+    //Add new entry
+    DefEntry entry = new DefEntry(name, dec, depth);
     ArrayList<DefEntry> entries = new ArrayList<>()l
     entries.add(entry);
     symtable.put(name, entries);
@@ -46,6 +57,23 @@ public class SemanticAnalyzer implements AbsynVisitor {
     //todo start by printing out blocks
 
     final static int SPACES = 4;
+
+    private void clearSymTable(int depth) {
+        for (Map.Entry<String, ArrayList<DecEntry>> var : symtable.entrySet()) {
+            DecEntry index = null;
+            for (DecEntry entry : var.getValue()) {
+               if (entry.depth == depth) {
+                   index = entry;
+                   break;
+               }
+            }
+            if (index != null) {
+                //indent(depth);
+                //System.out.println("Removing: "+index.name);
+                var.getValue().remove(index);
+            }
+        }
+    }
 
     private void indent(int level) {
         for (int i = 0; i < level * SPACES; i++)
@@ -184,6 +212,19 @@ public class SemanticAnalyzer implements AbsynVisitor {
         //System.out.println("SimpleDec: " + String.valueOf(dec.name));
         indent(depth);
         System.out.println("Declaration: "+String.valueOf(dec.name));
+
+        String name = String.valueOf(dec.name);
+        ArrayList<DecEntry> entries;
+        if (symtable.containsKey(name)) {
+            entries = symtable.get(name);
+        } else {
+            entries = new ArrayList<>();
+            symtable.put(name, entries);
+
+        }
+        DecEntry entry = new DecEntry(name, dec, depth);
+        entries.add(entry);
+
         dec.type.accept(this, ++level);
     }
 
@@ -198,7 +239,8 @@ public class SemanticAnalyzer implements AbsynVisitor {
         System.out.println("Function: " + dec.func);
 
         //todo need to add params to compound depth
-        depth++;
+        indent(++depth);
+        System.out.println("Params: ");
         dec.params.accept(this, ++level);
         depth--;
         dec.body.accept(this, ++level);
@@ -215,6 +257,7 @@ public class SemanticAnalyzer implements AbsynVisitor {
         if (exp.exps != null)
             exp.exps.accept(this, ++level);
 
+        clearSymTable(depth);
         indent(depth);
         System.out.println("Leaving compound block");
         depth--;
