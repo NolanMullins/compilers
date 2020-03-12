@@ -29,15 +29,6 @@ public class SemanticAnalyzer implements AbsynVisitor
         symtable = new HashMap<>();
     }
 
-    /*
-    //Add new entry
-    DefEntry entry = new DefEntry(name, dec, depth);
-    ArrayList<DefEntry> entries = new ArrayList<>()l
-    entries.add(entry);
-    symtable.put(name, entries);
-
-
-
     //His hashtable / symtable: 
     //Basically is a map of current accessible variables
     //When entering a new block we increment our depth
@@ -45,6 +36,7 @@ public class SemanticAnalyzer implements AbsynVisitor
     //When leave a scope remove all declarations with the current depth
     //Reduce depth by 1 
 
+    /*
     //Checking scope ex
     String name;
     if (symtable.contains(name)) {
@@ -57,6 +49,23 @@ public class SemanticAnalyzer implements AbsynVisitor
     //todo start by printing out blocks
 
     final static int SPACES = 4;
+    
+    //May need to differentiate functions or check if theres a conflict
+    private void addEntryToTable(Dec dec, String name) {
+        indent(depth);
+        System.out.println("Declaration: "+name);
+
+        ArrayList<DecEntry> entries;
+        if (symtable.containsKey(name)) {
+            entries = symtable.get(name);
+        } else {
+            entries = new ArrayList<>();
+            symtable.put(name, entries);
+
+        }
+        DecEntry entry = new DecEntry(name, dec, depth);
+        entries.add(entry);
+    }
 
     private void clearSymTable(int depth) {
         for (Map.Entry<String, ArrayList<DecEntry>> var : symtable.entrySet()) {
@@ -203,6 +212,9 @@ public class SemanticAnalyzer implements AbsynVisitor
         arr.type.accept(this, ++level);
         //indent(++level);
         //System.out.println("Name: " + arr.name);
+
+        addEntryToTable(arr, arr.name);
+
         if (arr.size != null)
             arr.size.accept(this, ++level);
     }
@@ -210,20 +222,8 @@ public class SemanticAnalyzer implements AbsynVisitor
     public void visit(SimpleDec dec, int level) {
         //indent(level);
         //System.out.println("SimpleDec: " + String.valueOf(dec.name));
-        indent(depth);
-        System.out.println("Declaration: "+String.valueOf(dec.name));
 
-        String name = String.valueOf(dec.name);
-        ArrayList<DecEntry> entries;
-        if (symtable.containsKey(name)) {
-            entries = symtable.get(name);
-        } else {
-            entries = new ArrayList<>();
-            symtable.put(name, entries);
-
-        }
-        DecEntry entry = new DecEntry(name, dec, depth);
-        entries.add(entry);
+        addEntryToTable(dec, dec.name);
 
         dec.type.accept(this, ++level);
     }
@@ -235,8 +235,10 @@ public class SemanticAnalyzer implements AbsynVisitor
         dec.type.accept(this, ++level);
         //indent(++level);
         //System.out.println("Name: " + dec.func);
-        indent(depth);
-        System.out.println("Function: " + dec.func);
+
+        //Add function to table
+        addEntryToTable(dec, dec.func);
+
 
         //todo need to add params to compound depth
         indent(++depth);
