@@ -2,6 +2,27 @@
 
 int a;
 
+int function(int c) {
+    int x[10];
+    a = c;
+    d = a;
+    test(a, c);
+    if (a == c)
+        a = 1;
+    if (a == c) {
+        a = 2;
+    }
+    x[notDefinedVar] = 1;
+}
+
+void test(int d, int e)
+{
+    int f;
+    f = function(d) + e;
+    f = f + 3;
+    return f;
+}
+
 void main(void) {
     int b;
     b = 1;
@@ -9,8 +30,4 @@ void main(void) {
     if (a == 1) {
         int b;
     }
-}
-
-int function(int c) {
-    a = c;
 }

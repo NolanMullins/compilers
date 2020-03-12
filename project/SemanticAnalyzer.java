@@ -53,7 +53,10 @@ public class SemanticAnalyzer implements AbsynVisitor
     //May need to differentiate functions or check if theres a conflict
     private void addEntryToTable(Dec dec, String name) {
         indent(depth);
-        System.out.println("Declaration: "+name);
+        if (dec instanceof FunctionDec)
+            System.out.println("Function: "+name);
+        else
+            System.out.println("Declaration: "+name);
 
         ArrayList<DecEntry> entries;
         if (symtable.containsKey(name)) {
@@ -107,8 +110,7 @@ public class SemanticAnalyzer implements AbsynVisitor
         level++;
         exp.test.accept(this, level);
 
-        //todo create scope
-        indent(++depth);
+        indent(depth);
         System.out.println("Enter if block: ");
         exp.thenpart.accept(this, level);
         if (exp.elsepart != null)
@@ -116,71 +118,30 @@ public class SemanticAnalyzer implements AbsynVisitor
 
         indent(depth);
         System.out.println("Leaving if block");
-        depth--;
     }
 
     public void visit(IntExp exp, int level) {
-        //indent(level);
-        //System.out.println("IntExp: " + exp.value);
     }
 
     public void visit(OpExp exp, int level) {
-        /*
-        indent(level);
-        System.out.print("OpExp:");
-        switch (exp.op) {
-        case OpExp.PLUS:
-            System.out.println(" + ");
-            break;
-        case OpExp.MINUS:
-            System.out.println(" - ");
-            break;
-        case OpExp.MUL:
-            System.out.println(" * ");
-            break;
-        case OpExp.DIV:
-            System.out.println(" / ");
-            break;
-        case OpExp.EQ:
-            System.out.println(" = ");
-            break;
-        case OpExp.LT:
-            System.out.println(" < ");
-            break;
-        case OpExp.GT:
-            System.out.println(" > ");
-            break;
-        default:
-            System.out.println("Unrecognized operator at line " + exp.row + " and column " + exp.col);
-        }
-        level++;*/
         exp.left.accept(this, level);
         exp.right.accept(this, level);
     }
 
     public void visit(RepeatExp exp, int level) {
-        /*indent(level);
-        System.out.println("RepeatExp:");
-        level++;*/
         exp.exps.accept(this, level);
         exp.test.accept(this, level);
     }
 
     public void visit(VarExp exp, int level) {
-        //indent(level);
-        //System.out.println("VarExp: ");
         exp.value.accept(this, level);
     }
 
     public void visit(WriteExp exp, int level) {
-        //indent(level);
-        //System.out.println("WriteExp:");
         exp.output.accept(this, ++level);
     }
 
     public void visit(NameTy t, int level) {
-        //indent(level);
-
         // Get the string of the represented int
         String typeString = "";
         if (t.type == 0) {
@@ -189,7 +150,6 @@ public class SemanticAnalyzer implements AbsynVisitor
             typeString = "void";
         }
 
-        //System.out.println("NameTy: " + typeString);
     }
 
     public void visit(VarDecList varDecList, int level) {
@@ -207,12 +167,9 @@ public class SemanticAnalyzer implements AbsynVisitor
     }
 
     public void visit(ArrayDec arr, int level) {
-        //indent(level);
-        //System.out.println("ArrayDec: ");
-        arr.type.accept(this, ++level);
-        //indent(++level);
-        //System.out.println("Name: " + arr.name);
 
+        arr.type.accept(this, ++level);
+        //Add var to table
         addEntryToTable(arr, arr.name);
 
         if (arr.size != null)
@@ -220,27 +177,19 @@ public class SemanticAnalyzer implements AbsynVisitor
     }
 
     public void visit(SimpleDec dec, int level) {
-        //indent(level);
-        //System.out.println("SimpleDec: " + String.valueOf(dec.name));
 
+        //Add var to table
         addEntryToTable(dec, dec.name);
-
         dec.type.accept(this, ++level);
     }
 
     public void visit(FunctionDec dec, int level) {
-        //indent(level);
-        //System.out.println("FunctionDec: ");
 
         dec.type.accept(this, ++level);
-        //indent(++level);
-        //System.out.println("Name: " + dec.func);
-
         //Add function to table
         addEntryToTable(dec, dec.func);
 
-
-        //todo need to add params to compound depth
+        //Add parameters to the new block depth
         indent(++depth);
         System.out.println("Params: ");
         dec.params.accept(this, ++level);
@@ -249,9 +198,7 @@ public class SemanticAnalyzer implements AbsynVisitor
     }
 
     public void visit(CompoundExp exp, int level) {
-        //indent(level);
-        //System.out.println("CompoundExp: ");
-
+        //Enter a compound block
         indent(++depth);
         System.out.println("Enter compound block: ");
         if (exp.decs != null)
@@ -259,6 +206,7 @@ public class SemanticAnalyzer implements AbsynVisitor
         if (exp.exps != null)
             exp.exps.accept(this, ++level);
 
+        //leave compound block, clear variables defined in scope
         clearSymTable(depth);
         indent(depth);
         System.out.println("Leaving compound block");
@@ -266,43 +214,43 @@ public class SemanticAnalyzer implements AbsynVisitor
     }
 
     public void visit(ReturnExp e, int level) {
-        //indent(level);
-        //System.out.println("ReturnExp: ");
         if (e.exp != null)
             e.exp.accept(this, ++level);
     }
 
     public void visit(WhileExp exp, int level) {
-        //indent(level);
-        //System.out.println("WhileExp: ");
-
         exp.body.accept(this, ++level);
         exp.test.accept(this, ++level);
     }
 
     public void visit(CallExp exp, int level) {
-        //indent(level);
-        //System.out.println("CallExp: " + exp.func + " ");
+        //todo maybe check if its referencing a var name?
+        if (!symtable.containsKey(exp.func)) {
+            System.out.println("Undefined function: " + exp.func + " [row: "+exp.row + " col: "+exp.col+"]");
+        }
         exp.args.accept(this, ++level);
     }
 
     public void visit(NilExp exp, int level) {
-        //indent(level);
-        //System.out.println("NilExp: ");
+
     }
 
     public void visit(EpsilonExp exp, int level) {
-        //indent(level);
+
     }
 
     public void visit(IndexVar var, int level) {
-        //indent(level);
-        //System.out.println("IndexVar: " + var.name + " ");
+        //todo maybe check if its referencing a function name?
+        if (!symtable.containsKey(var.name)) {
+            System.out.println("Undefined use of: "+var.name + " [row: "+var.row + " col: "+var.col+"]");
+        }
         var.index.accept(this, ++level);
     }
 
     public void visit(SimpleVar var, int level) {
-        //indent(level);
-        //System.out.println("SimpleVar: " + var.name + " ");
+        //todo maybe check if its referencing a function name?
+        if (!symtable.containsKey(var.name)) {
+            System.out.println("Undefined use of: "+var.name + " [row: "+var.row + " col: "+var.col+"]");
+        }
     }
 }
