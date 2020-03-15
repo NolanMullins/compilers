@@ -1,7 +1,6 @@
 package absyn;
 
 public class ArrayDec extends VarDec {
-  public NameTy type;
   public String name;
   public IntExp size;
 

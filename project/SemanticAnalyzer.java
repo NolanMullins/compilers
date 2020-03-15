@@ -13,6 +13,7 @@ public class SemanticAnalyzer implements AbsynVisitor
         Dec dec; 
         int depth;
         int type;
+        public ArrayList<Integer> params = null;
         public DecEntry(String name, Dec dec, int depth, int type) 
         {
             this.name = name;
@@ -28,6 +29,7 @@ public class SemanticAnalyzer implements AbsynVisitor
 
     private int depth;
     private HashMap<String, ArrayList<DecEntry>> symtable;
+    private DecEntry currFunction = null;
 
 
     public SemanticAnalyzer() {
@@ -52,15 +54,10 @@ public class SemanticAnalyzer implements AbsynVisitor
     }
     */
 
-    //TODO 
-    //function calls
-    //return exps
-    //test conditions must be int
-
     final static int SPACES = 4;
     
     //May need check if theres a conflict, can you define a variable in a higher scope with the same name as a function?
-    private void addEntryToTable(Dec dec, String name, int type) {
+    private DecEntry addEntryToTable(Dec dec, String name, int type) {
         indent(depth);
 
         String decType = "declaration";
@@ -73,7 +70,7 @@ public class SemanticAnalyzer implements AbsynVisitor
             if (list.get(list.size()-1).depth == depth) {
                 //Redefinition error
                 System.out.println("[ERROR] Redefined "+decType+": " + name + " [row: "+dec.row + " col: "+dec.col+"]");
-                return;
+                return null;
             }
         }
 
@@ -91,6 +88,7 @@ public class SemanticAnalyzer implements AbsynVisitor
         }
         DecEntry entry = new DecEntry(name, dec, depth, type);
         entries.add(entry);
+        return entry;
     }
 
     private void clearSymTable(int depth) {
@@ -103,8 +101,6 @@ public class SemanticAnalyzer implements AbsynVisitor
                }
             }
             if (index != null) {
-                //indent(depth);
-                //System.out.println("Removing: "+index.name);
                 var.getValue().remove(index);
             }
         }
@@ -120,6 +116,16 @@ public class SemanticAnalyzer implements AbsynVisitor
         return -1;
     }
 
+    private String formatArgsString(ArrayList<Integer> args) {
+        String s = "";
+        for (Integer i : args) {
+            s += NameTy.types[i] +", ";
+        }
+        if (s.length() > 0)
+            return s.substring(0, s.length()-2);
+        return s;
+    }
+
     private void indent(int level) {
         for (int i = 0; i < level * SPACES; i++)
             System.out.print(" ");
@@ -132,7 +138,6 @@ public class SemanticAnalyzer implements AbsynVisitor
         }
     }
 
-    //TODO Need to check if lhs type = rhs
     public void visit(AssignExp exp, int level) {
         level++;
         exp.lhs.accept(this, level);
@@ -162,7 +167,6 @@ public class SemanticAnalyzer implements AbsynVisitor
         exp.type = NameTy.INT;
     }
 
-    //TODO Check left and right side of expression
     public void visit(OpExp exp, int level) {
 
         exp.left.accept(this, level);
@@ -174,7 +178,14 @@ public class SemanticAnalyzer implements AbsynVisitor
             System.out.println("[ERROR] Type mismatch around operator, found ("+NameTy.types[exp.left.type]+") "+OpExp.operators[exp.op]+" ("+NameTy.types[exp.right.type]+") [row: "+exp.row + " col: "+exp.col+"]");
             exp.type = -1;
         } else if (exp.left.type >= 0 && exp.right.type >= 0) {
-            exp.type = exp.left.type;
+            //Check if boolean operator (Need int on both sides)
+            if (exp.op > 3 && exp.left.type == NameTy.VOID) {
+                indent(depth);
+                System.out.println("[ERROR] Boolean operation must be between INT not VOID [row: "+exp.row + " col: "+exp.col+"]");
+                exp.type = -1;
+            } else {
+                exp.type = exp.left.type;
+            }
         } else {
             exp.type = -1;
         }
@@ -242,14 +253,24 @@ public class SemanticAnalyzer implements AbsynVisitor
         dec.type.accept(this, ++level);
         //Add function to table
         System.out.println("");
-        addEntryToTable(dec, dec.func, dec.type.type);
-
+        currFunction = addEntryToTable(dec, dec.func, dec.type.type);
+        currFunction.params = new ArrayList<>();
         //Add parameters to the new block depth
         indent(++depth);
         System.out.println("Params: ");
         dec.params.accept(this, ++level);
+
+        //Store parameter information related to function dec
+        VarDecList list = dec.params;
+        while (list != null && list.head != null) {
+            currFunction.params.add(list.head.type.type);
+            list = list.tail;
+        }
+
+        //leave param depth
         depth--;
         dec.body.accept(this, ++level);
+        currFunction = null;
     }
 
     public void visit(CompoundExp exp, int level) {
@@ -269,8 +290,15 @@ public class SemanticAnalyzer implements AbsynVisitor
     }
 
     public void visit(ReturnExp e, int level) {
-        if (e.exp != null)
+        if (e.exp != null) {
             e.exp.accept(this, ++level);
+            if (e.exp.type >= 0 && currFunction.type >= 0 && e.exp.type != currFunction.type) {
+                indent(depth);
+                System.out.println("[ERROR] Return type must be ("+NameTy.types[currFunction.type]+"), found ("+NameTy.types[e.exp.type]+") [row: "+e.exp.row + " col: "+e.exp.col+"]");
+            }
+        } else if (currFunction!= null && currFunction.type != NameTy.VOID) {
+            indent(depth);
+        }
     }
 
     public void visit(WhileExp exp, int level) {
@@ -283,9 +311,42 @@ public class SemanticAnalyzer implements AbsynVisitor
         if (!symtable.containsKey(exp.func) || symtable.get(exp.func).size() == 0) {
             indent(depth);
             System.out.println("[ERROR] Undefined function: " + exp.func + " [row: "+exp.row + " col: "+exp.col+"]");
+            exp.type = -1;
+            return;
         }
         exp.type = getVarType(exp.func);
         exp.args.accept(this, ++level);
+
+        //Args checking 
+        ArrayList<Integer> params = symtable.get(exp.func).get(0).params;
+        ExpList args = exp.args;
+
+        //Check no params
+        if (params.size() == 0 && args.head == null)
+            return;
+
+        ArrayList<Integer> argsArray = new ArrayList<>();
+        while (args != null && args.head != null) {
+            argsArray.add(args.head.type);
+            args = args.tail;
+        }
+
+        //Check for correct number of params
+        if (params.size() != argsArray.size()) {
+            indent(depth);
+            System.out.println("[ERROR] Arguments do not match function expected: "+exp.func+"("+formatArgsString(params)+") got "+exp.func+"("+formatArgsString(argsArray)+")");
+            return;
+        }
+
+        //Check if args match param types
+        for (int i = 0; i < params.size(); i++) {
+            if (params.get(i) != argsArray.get(i)) {
+                indent(depth);
+                System.out.println("[ERROR] Arguments do not match function expected: "+exp.func+"("+formatArgsString(params)+") got "+exp.func+"("+formatArgsString(argsArray)+")");
+                return;
+            }
+        }
+
     }
 
     public void visit(NilExp exp, int level) {
