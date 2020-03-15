@@ -4,6 +4,8 @@ int a;
 
 int function(int c) {
     int x[10];
+    void tmp;
+    void x;
     a = c;
     d = a;
     test(a, c);
@@ -13,13 +15,20 @@ int function(int c) {
         a = 2;
     }
     x[notDefinedVar] = 1;
+    x[c] = 1;
+    x[tmp] = 1;
+}
+
+void voidFnc(int test) {
+    
 }
 
 void test(int d, int e)
 {
-    int f;
-    f = function(d) + e;
-    f = f + 3;
+    void f;
+    f = e;
+    f = voidFnc(d) + e;
+    f = f + voidFnc(d);
     return f;
 }
 

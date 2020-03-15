@@ -12,6 +12,8 @@ public class OpExp extends Exp {
   public final static int GE    = 8;
   public final static int NE    = 9;
 
+  public final static String[] operators = {"+", "-", "*", "/", "==", "<", "<=", ">", ">=", "!="};
+
   public Exp left;
   public int op;
   public Exp right;

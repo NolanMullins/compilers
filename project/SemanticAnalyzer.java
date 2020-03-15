@@ -12,11 +12,17 @@ public class SemanticAnalyzer implements AbsynVisitor
         String name; 
         Dec dec; 
         int depth;
-        public DecEntry(String name, Dec dec, int depth) 
+        int type;
+        public DecEntry(String name, Dec dec, int depth, int type) 
         {
             this.name = name;
             this.dec = dec;
             this.depth = depth;
+            this.type = type;
+        }
+        @Override
+        public String toString() {
+            return name+", "+NameTy.types[type]+", "+dec;
         }
     }
 
@@ -46,18 +52,35 @@ public class SemanticAnalyzer implements AbsynVisitor
     }
     */
 
-    //todo start by printing out blocks
+    //TODO 
+    //function calls
+    //return exps
+    //test conditions must be int
 
     final static int SPACES = 4;
     
-    //May need to differentiate functions or check if theres a conflict
-    private void addEntryToTable(Dec dec, String name) {
+    //May need check if theres a conflict, can you define a variable in a higher scope with the same name as a function?
+    private void addEntryToTable(Dec dec, String name, int type) {
         indent(depth);
-        if (dec instanceof FunctionDec)
-            System.out.println("Function: "+name);
-        else
-            System.out.println("Declaration: "+name);
 
+        String decType = "declaration";
+        if (dec instanceof FunctionDec)
+            decType = "function";
+
+        //Check if its already defined
+        if (symtable.containsKey(name) && symtable.get(name).size() > 0) {
+            ArrayList<DecEntry> list = symtable.get(name);
+            if (list.get(list.size()-1).depth == depth) {
+                //Redefinition error
+                System.out.println("[ERROR] Redefined "+decType+": " + name + " [row: "+dec.row + " col: "+dec.col+"]");
+                return;
+            }
+        }
+
+        //Output declaration msg
+        System.out.println(decType+": "+name);
+
+        //Add declaration to symtable
         ArrayList<DecEntry> entries;
         if (symtable.containsKey(name)) {
             entries = symtable.get(name);
@@ -66,7 +89,7 @@ public class SemanticAnalyzer implements AbsynVisitor
             symtable.put(name, entries);
 
         }
-        DecEntry entry = new DecEntry(name, dec, depth);
+        DecEntry entry = new DecEntry(name, dec, depth, type);
         entries.add(entry);
     }
 
@@ -87,6 +110,16 @@ public class SemanticAnalyzer implements AbsynVisitor
         }
     }
 
+    private int getVarType(String name) {
+        if (symtable.containsKey(name)) {
+            ArrayList<DecEntry> list = symtable.get(name);
+            if (list.size() <= 0)
+                return -1;
+            return list.get(list.size()-1).type;
+        }
+        return -1;
+    }
+
     private void indent(int level) {
         for (int i = 0; i < level * SPACES; i++)
             System.out.print(" ");
@@ -99,11 +132,16 @@ public class SemanticAnalyzer implements AbsynVisitor
         }
     }
 
-    //todo will need type checking here
+    //TODO Need to check if lhs type = rhs
     public void visit(AssignExp exp, int level) {
         level++;
         exp.lhs.accept(this, level);
         exp.rhs.accept(this, level);
+        int lhsType = getVarType(exp.lhs.name);
+        if (lhsType >= 0 && exp.rhs.type >= 0 && lhsType != exp.rhs.type) {
+            indent(depth);
+            System.out.println("[ERROR] Type mismatch in assignment found ("+NameTy.types[exp.rhs.type]+") expected ("+NameTy.types[lhsType]+") [row: "+exp.row + " col: "+exp.col+"]");
+        }
     }
 
     public void visit(IfExp exp, int level) {
@@ -121,11 +159,26 @@ public class SemanticAnalyzer implements AbsynVisitor
     }
 
     public void visit(IntExp exp, int level) {
+        exp.type = NameTy.INT;
     }
 
+    //TODO Check left and right side of expression
     public void visit(OpExp exp, int level) {
+
         exp.left.accept(this, level);
         exp.right.accept(this, level);
+
+        //If expression var have been defined and their types do not match
+        if (exp.left.type >= 0 && exp.right.type >= 0 && exp.left.type != exp.right.type) {
+            indent(depth);
+            System.out.println("[ERROR] Type mismatch around operator, found ("+NameTy.types[exp.left.type]+") "+OpExp.operators[exp.op]+" ("+NameTy.types[exp.right.type]+") [row: "+exp.row + " col: "+exp.col+"]");
+            exp.type = -1;
+        } else if (exp.left.type >= 0 && exp.right.type >= 0) {
+            exp.type = exp.left.type;
+        } else {
+            exp.type = -1;
+        }
+
     }
 
     public void visit(RepeatExp exp, int level) {
@@ -135,6 +188,7 @@ public class SemanticAnalyzer implements AbsynVisitor
 
     public void visit(VarExp exp, int level) {
         exp.value.accept(this, level);
+        exp.type = getVarType(exp.value.name);
     }
 
     public void visit(WriteExp exp, int level) {
@@ -170,7 +224,7 @@ public class SemanticAnalyzer implements AbsynVisitor
 
         arr.type.accept(this, ++level);
         //Add var to table
-        addEntryToTable(arr, arr.name);
+        addEntryToTable(arr, arr.name, arr.type.type);
 
         if (arr.size != null)
             arr.size.accept(this, ++level);
@@ -179,7 +233,7 @@ public class SemanticAnalyzer implements AbsynVisitor
     public void visit(SimpleDec dec, int level) {
 
         //Add var to table
-        addEntryToTable(dec, dec.name);
+        addEntryToTable(dec, dec.name, dec.type.type);
         dec.type.accept(this, ++level);
     }
 
@@ -187,7 +241,8 @@ public class SemanticAnalyzer implements AbsynVisitor
 
         dec.type.accept(this, ++level);
         //Add function to table
-        addEntryToTable(dec, dec.func);
+        System.out.println("");
+        addEntryToTable(dec, dec.func, dec.type.type);
 
         //Add parameters to the new block depth
         indent(++depth);
@@ -224,10 +279,12 @@ public class SemanticAnalyzer implements AbsynVisitor
     }
 
     public void visit(CallExp exp, int level) {
-        //todo maybe check if its referencing a var name?
-        if (!symtable.containsKey(exp.func)) {
-            System.out.println("Undefined function: " + exp.func + " [row: "+exp.row + " col: "+exp.col+"]");
+        //TODO maybe check if its referencing a var name?
+        if (!symtable.containsKey(exp.func) || symtable.get(exp.func).size() == 0) {
+            indent(depth);
+            System.out.println("[ERROR] Undefined function: " + exp.func + " [row: "+exp.row + " col: "+exp.col+"]");
         }
+        exp.type = getVarType(exp.func);
         exp.args.accept(this, ++level);
     }
 
@@ -240,17 +297,24 @@ public class SemanticAnalyzer implements AbsynVisitor
     }
 
     public void visit(IndexVar var, int level) {
-        //todo maybe check if its referencing a function name?
-        if (!symtable.containsKey(var.name)) {
-            System.out.println("Undefined use of: "+var.name + " [row: "+var.row + " col: "+var.col+"]");
+        //TODO maybe check if its referencing a function name?
+        if (!symtable.containsKey(var.name) || symtable.get(var.name).size() == 0) {
+            indent(depth);
+            System.out.println("[ERROR] Undefined use of: "+var.name + " [row: "+var.row + " col: "+var.col+"]");
         }
         var.index.accept(this, ++level);
+
+        if (var.index.type >= 0 && var.index.type != NameTy.INT) {
+            indent(depth);
+            System.out.println("[ERROR] Index variable not type INT [row: "+var.row + " col: "+var.col+"]");
+        }
     }
 
     public void visit(SimpleVar var, int level) {
-        //todo maybe check if its referencing a function name?
-        if (!symtable.containsKey(var.name)) {
-            System.out.println("Undefined use of: "+var.name + " [row: "+var.row + " col: "+var.col+"]");
+        //TODO maybe check if its referencing a function name?
+        if (!symtable.containsKey(var.name) || symtable.get(var.name).size() == 0) {
+            indent(depth);
+            System.out.println("[ERROR] Undefined use of: "+var.name + " [row: "+var.row + " col: "+var.col+"]");
         }
     }
 }
