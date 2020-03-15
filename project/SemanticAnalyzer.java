@@ -13,7 +13,7 @@ public class SemanticAnalyzer implements AbsynVisitor
         Dec dec; 
         int depth;
         int type;
-        public ArrayList<Integer> params = null;
+        public ArrayList<Dec> params = null;
         public DecEntry(String name, Dec dec, int depth, int type) 
         {
             this.name = name;
@@ -54,6 +54,8 @@ public class SemanticAnalyzer implements AbsynVisitor
     }
     */
 
+    //TODO formatting
+
     final static int SPACES = 4;
     
     //May need check if theres a conflict, can you define a variable in a higher scope with the same name as a function?
@@ -75,7 +77,10 @@ public class SemanticAnalyzer implements AbsynVisitor
         }
 
         //Output declaration msg
-        System.out.println(decType+": "+name);
+        if (dec instanceof FunctionDec)
+            System.out.println("Function declaration: "+name);
+        else
+            System.out.println(name+": "+NameTy.types[type]+(dec instanceof ArrayDec ? "*" : ""));
 
         //Add declaration to symtable
         ArrayList<DecEntry> entries;
@@ -116,10 +121,32 @@ public class SemanticAnalyzer implements AbsynVisitor
         return -1;
     }
 
-    private String formatArgsString(ArrayList<Integer> args) {
+    private String formatParamsString(ArrayList<Dec> args) {
         String s = "";
-        for (Integer i : args) {
-            s += NameTy.types[i] +", ";
+        for (Dec dec : args) {
+            s += NameTy.types[dec.type.type] +(dec instanceof ArrayDec ? "*" : "")+", ";
+        }
+        if (s.length() > 0)
+            return s.substring(0, s.length()-2);
+        return s;
+    }
+
+    private String formatArgsString(ArrayList<Exp> args) {
+        String s = "";
+        for (Exp e : args) {
+            String type;
+            if (e instanceof VarExp) {
+                String varName = ((VarExp)e).value.name;
+                if (symtable.containsKey(varName) && symtable.get(varName).size() > 0) {
+                    Dec dec = symtable.get(varName).get(symtable.get(varName).size()-1).dec;
+                    type = NameTy.types[dec.type.type] +(dec instanceof ArrayDec ? "*" : "");
+                } else {
+                    type = "Undefined";
+                }
+            } else {
+                type = NameTy.types[e.type];
+            }
+            s += type+", ";
         }
         if (s.length() > 0)
             return s.substring(0, s.length()-2);
@@ -153,14 +180,14 @@ public class SemanticAnalyzer implements AbsynVisitor
         level++;
         exp.test.accept(this, level);
 
-        indent(depth);
-        System.out.println("Enter if block: ");
+        //indent(depth);
+        //System.out.println("Enter if block: ");
         exp.thenpart.accept(this, level);
         if (exp.elsepart != null)
             exp.elsepart.accept(this, level);
 
-        indent(depth);
-        System.out.println("Leaving if block");
+        //indent(depth);
+        //System.out.println("Leaving if block");
     }
 
     public void visit(IntExp exp, int level) {
@@ -259,11 +286,12 @@ public class SemanticAnalyzer implements AbsynVisitor
         indent(++depth);
         System.out.println("Params: ");
         dec.params.accept(this, ++level);
-
+        indent(depth);
+        System.out.println("");
         //Store parameter information related to function dec
         VarDecList list = dec.params;
         while (list != null && list.head != null) {
-            currFunction.params.add(list.head.type.type);
+            currFunction.params.add(list.head);
             list = list.tail;
         }
 
@@ -275,8 +303,11 @@ public class SemanticAnalyzer implements AbsynVisitor
 
     public void visit(CompoundExp exp, int level) {
         //Enter a compound block
-        indent(++depth);
-        System.out.println("Enter compound block: ");
+        if (depth>0) {
+            indent(depth);
+            System.out.println("Entering a new block: ");
+        }
+        depth++;
         if (exp.decs != null)
             exp.decs.accept(this, ++level);
         if (exp.exps != null)
@@ -284,9 +315,11 @@ public class SemanticAnalyzer implements AbsynVisitor
 
         //leave compound block, clear variables defined in scope
         clearSymTable(depth);
-        indent(depth);
-        System.out.println("Leaving compound block");
         depth--;
+        if (depth > 0) {
+            indent(depth);
+            System.out.println("Leaving the block");
+        }
     }
 
     public void visit(ReturnExp e, int level) {
@@ -302,15 +335,19 @@ public class SemanticAnalyzer implements AbsynVisitor
     }
 
     public void visit(WhileExp exp, int level) {
-        exp.body.accept(this, ++level);
         exp.test.accept(this, ++level);
+        exp.body.accept(this, ++level);
     }
 
     public void visit(CallExp exp, int level) {
-        //TODO maybe check if its referencing a var name?
         if (!symtable.containsKey(exp.func) || symtable.get(exp.func).size() == 0) {
             indent(depth);
             System.out.println("[ERROR] Undefined function: " + exp.func + " [row: "+exp.row + " col: "+exp.col+"]");
+            exp.type = -1;
+            return;
+        } else if(!(symtable.get(exp.func).get(symtable.get(exp.func).size()-1).dec instanceof FunctionDec)) {
+            indent(depth);
+            System.out.println("[ERROR] Function '" + exp.func + "' is a Var [row: "+exp.row + " col: "+exp.col+"]");
             exp.type = -1;
             return;
         }
@@ -318,31 +355,51 @@ public class SemanticAnalyzer implements AbsynVisitor
         exp.args.accept(this, ++level);
 
         //Args checking 
-        ArrayList<Integer> params = symtable.get(exp.func).get(0).params;
+        ArrayList<Dec> params = symtable.get(exp.func).get(0).params;
         ExpList args = exp.args;
 
         //Check no params
         if (params.size() == 0 && args.head == null)
             return;
 
-        ArrayList<Integer> argsArray = new ArrayList<>();
+        ArrayList<Exp> argsArray = new ArrayList<>();
         while (args != null && args.head != null) {
-            argsArray.add(args.head.type);
+            argsArray.add(args.head);
             args = args.tail;
         }
 
         //Check for correct number of params
         if (params.size() != argsArray.size()) {
             indent(depth);
-            System.out.println("[ERROR] Arguments do not match function expected: "+exp.func+"("+formatArgsString(params)+") got "+exp.func+"("+formatArgsString(argsArray)+")");
+            System.out.print("[ERROR] Arguments do not match function expected: "+exp.func+"("+formatParamsString(params)+") got "+exp.func+"("+formatArgsString(argsArray)+")");
+            System.out.println(" [row: "+exp.row + " col: "+exp.col+"]");
             return;
         }
 
         //Check if args match param types
         for (int i = 0; i < params.size(); i++) {
-            if (params.get(i) != argsArray.get(i)) {
+            boolean error = false;
+            //Check if types dont match
+            if (params.get(i).type.type != argsArray.get(i).type) {
+                error = true;
+            }
+            //Check for arrays
+            else if (params.get(i) instanceof ArrayDec) {
+                Exp e = argsArray.get(i);
+                if (e instanceof VarExp) {
+                    String varName = ((VarExp)e).value.name;
+                    if (symtable.containsKey(varName) && symtable.get(varName).size() > 0) {
+                        if (!(symtable.get(varName).get(symtable.get(varName).size()-1).dec instanceof ArrayDec))
+                            error = true;
+                    } else {
+                        error = true;
+                    }
+                }
+            }
+            if (error) {
                 indent(depth);
-                System.out.println("[ERROR] Arguments do not match function expected: "+exp.func+"("+formatArgsString(params)+") got "+exp.func+"("+formatArgsString(argsArray)+")");
+                System.out.print("[ERROR] Arguments do not match function expected: "+exp.func+"("+formatParamsString(params)+") got "+exp.func+"("+formatArgsString(argsArray)+")");
+                System.out.println(" [row: "+exp.row + " col: "+exp.col+"]");
                 return;
             }
         }
@@ -358,10 +415,12 @@ public class SemanticAnalyzer implements AbsynVisitor
     }
 
     public void visit(IndexVar var, int level) {
-        //TODO maybe check if its referencing a function name?
         if (!symtable.containsKey(var.name) || symtable.get(var.name).size() == 0) {
             indent(depth);
             System.out.println("[ERROR] Undefined use of: "+var.name + " [row: "+var.row + " col: "+var.col+"]");
+        } else if(symtable.get(var.name).get(symtable.get(var.name).size()-1).dec instanceof FunctionDec) {
+            indent(depth);
+            System.out.println("[ERROR] Var '" + var.name + "' is a function [row: "+var.row + " col: "+var.col+"]");
         }
         var.index.accept(this, ++level);
 
@@ -372,10 +431,12 @@ public class SemanticAnalyzer implements AbsynVisitor
     }
 
     public void visit(SimpleVar var, int level) {
-        //TODO maybe check if its referencing a function name?
         if (!symtable.containsKey(var.name) || symtable.get(var.name).size() == 0) {
             indent(depth);
             System.out.println("[ERROR] Undefined use of: "+var.name + " [row: "+var.row + " col: "+var.col+"]");
+        } else if(symtable.get(var.name).get(symtable.get(var.name).size()-1).dec instanceof FunctionDec) {
+            indent(depth);
+            System.out.println("[ERROR] Var '" + var.name + "' is a function [row: "+var.row + " col: "+var.col+"]");
         }
     }
 }

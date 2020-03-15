@@ -27,6 +27,9 @@ void voidFnc(int test) {
 }
 
 void voidFnc2(int test) {
+    int z;
+    voidFnc = 1;
+    z(); 
     return;
 }
 
@@ -39,8 +42,13 @@ void test(int d, int e)
     return f;
 }
 
+int arrayTest(int arr[]) {
+    arr[5] = 5;
+}
+
 void main(void) {
     int b;
+    int testArray[6];
     void tmp;
     b = 1;
     a = 1;
@@ -48,7 +56,21 @@ void main(void) {
     test(a, b);
     test();
     test(tmp, a);
+    arrayTest();
+    arrayTest(a);
+    arrayTest(testArray);
     if (a == 1) {
         int b;
+    }
+    while (a > 0) {
+        void a; 
+        a = test(b, b);
+    }
+
+    {
+        int blockTest;
+        {
+            int blockTest2;
+        }
     }
 }
