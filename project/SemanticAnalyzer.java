@@ -7,6 +7,8 @@ import java.util.*;
 public class SemanticAnalyzer implements AbsynVisitor 
 {
 
+    static int sFlag = 0;
+
     class DecEntry 
     {
         String name; 
@@ -31,8 +33,9 @@ public class SemanticAnalyzer implements AbsynVisitor
     private HashMap<String, ArrayList<DecEntry>> symtable;
     private DecEntry currFunction = null;
 
+    public SemanticAnalyzer(int s) {
+        sFlag = s;
 
-    public SemanticAnalyzer() {
         depth = 0;
         symtable = new HashMap<>();
     }
@@ -76,11 +79,13 @@ public class SemanticAnalyzer implements AbsynVisitor
             }
         }
 
-        //Output declaration msg
-        if (dec instanceof FunctionDec)
-            System.out.println("Function declaration: "+name);
-        else
-            System.out.println(name+": "+NameTy.types[type]+(dec instanceof ArrayDec ? "*" : ""));
+        //Output declaration msg if the -s was set
+        if (sFlag == 1) {
+            if (dec instanceof FunctionDec)
+                System.out.println("Function declaration: "+name);
+            else
+                System.out.println(name+": "+NameTy.types[type]+(dec instanceof ArrayDec ? "*" : ""));
+        }
 
         //Add declaration to symtable
         ArrayList<DecEntry> entries;
@@ -154,8 +159,10 @@ public class SemanticAnalyzer implements AbsynVisitor
     }
 
     private void indent(int level) {
-        for (int i = 0; i < level * SPACES; i++)
-            System.out.print(" ");
+        if (sFlag == 1) {
+            for (int i = 0; i < level * SPACES; i++)
+                System.out.print(" ");
+        }
     }
 
     public void visit(ExpList expList, int level) {
@@ -279,15 +286,18 @@ public class SemanticAnalyzer implements AbsynVisitor
 
         dec.type.accept(this, ++level);
         //Add function to table
-        System.out.println("");
+        if (sFlag == 1)
+            System.out.println("");
         currFunction = addEntryToTable(dec, dec.func, dec.type.type);
         currFunction.params = new ArrayList<>();
         //Add parameters to the new block depth
         indent(++depth);
-        System.out.println("Params: ");
+        if (sFlag == 1)
+            System.out.println("Params: ");
         dec.params.accept(this, ++level);
         indent(depth);
-        System.out.println("");
+        if (sFlag == 1)
+            System.out.println("");
         //Store parameter information related to function dec
         VarDecList list = dec.params;
         while (list != null && list.head != null) {
@@ -303,7 +313,7 @@ public class SemanticAnalyzer implements AbsynVisitor
 
     public void visit(CompoundExp exp, int level) {
         //Enter a compound block
-        if (depth>0) {
+        if (depth>0 && sFlag == 1) {
             indent(depth);
             System.out.println("Entering a new block: ");
         }
@@ -316,7 +326,7 @@ public class SemanticAnalyzer implements AbsynVisitor
         //leave compound block, clear variables defined in scope
         clearSymTable(depth);
         depth--;
-        if (depth > 0) {
+        if (depth > 0 && sFlag == 1) {
             indent(depth);
             System.out.println("Leaving the block");
         }

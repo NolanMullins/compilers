@@ -23,13 +23,31 @@ import absyn.*;
    
 class Main {
   public final static boolean SHOW_TREE = false;
-  static public void main(String argv[]) {    
+  static public void main(String argv[]) {  
+    
+    int sFlag = 0; // Assume the -s was not passed in
+    String fileName = "";
+
+    if (argv.length > 2) {
+      System.out.println("ERROR: Too many arguments passed in");
+      System.exit(1);
+    } 
+
+    for(int i=0; i< argv.length; i++)
+    {
+      if (argv[i].equals("-s")) {
+        sFlag = 1;
+      } else {
+        fileName = argv[i];
+      }
+    }
+
     /* Start the parser */
     try {
-      parser p = new parser(new Lexer(new FileReader(argv[0])));
+      parser p = new parser(new Lexer(new FileReader(fileName)));
       Absyn result = (Absyn)(p.parse().value);      
       if (result != null) {
-        SemanticAnalyzer analyzer = new SemanticAnalyzer();
+        SemanticAnalyzer analyzer = new SemanticAnalyzer(sFlag);
         result.accept(analyzer, 0);
       }
       if (SHOW_TREE && result != null) {
