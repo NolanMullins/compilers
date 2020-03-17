@@ -28,6 +28,9 @@ test:
 run:
 	java $(CLASSPATH) Main data/semanticTest.cm
 
+run-s:
+	java $(CLASSPATH) Main -s data/semanticTest.cm
+
 sample1:
 	java $(CLASSPATH) Main data/sample1.cm
 
