@@ -57,8 +57,6 @@ public class SemanticAnalyzer implements AbsynVisitor
     }
     */
 
-    //TODO formatting
-
     final static int SPACES = 4;
     
     //May need check if theres a conflict, can you define a variable in a higher scope with the same name as a function?
