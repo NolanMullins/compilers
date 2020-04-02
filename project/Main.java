@@ -50,7 +50,7 @@ class Main {
 				 result.accept(visitor, 0); 
 			}
 			if (generateASM) {
-                ASMGenerator asm = new ASMGenerator();
+                ASMGenerator asm = new ASMGenerator(fileName);
 				result.accept(asm, 0);
 			}
 		} catch (Exception e) {

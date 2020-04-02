@@ -15,11 +15,11 @@ public class ASMGenerator implements AbsynVisitor
     private ASMUtils asm = null;
     private ASMSymbolTable table = null;
 
-    public ASMGenerator() {
+    public ASMGenerator(String fileName) {
         depth = 0;
         asm = new ASMUtils();
         table = new ASMSymbolTable(sFlag);
-        asm.prelude();
+        asm.prelude(fileName);
     }
 
     //Constant definitions
