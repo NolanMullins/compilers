@@ -218,6 +218,10 @@ public class ASMGenerator implements AbsynVisitor
 
     public void visit(CallExp exp, int level) {
         if (!table.symtable.containsKey(exp.func) || table.symtable.get(exp.func).size() == 0) {
+            if (exp.func.toString().equals("input") || exp.func.toString().equals("output"))
+                return;
+            System.out.println(exp.func.toString());
+            System.out.println(exp.func.toString().equals("input"));
             indent(depth);
             System.out.println("[ERROR] Undefined function: " + exp.func + " [row: "+exp.row + " col: "+exp.col+"]");
             exp.type = -1;

@@ -16,36 +16,51 @@ public class ASMUtils
     final static int ac = 0;
     final static int ac1 = 1;
 
+    private static int ins = 0;
+
     //Utility functions
     private void outComment(String line) {
         System.out.println("* "+line);
     }
 
     private void out(String line) {
-        System.out.println(line);
+        System.out.println(ins++ + ":\t"+line);
     }
 
+    public void out(int ins, String line) {
+        System.out.println(ins + ":\t"+line);
+    }
 
+    //Output a comment and skip a line, return skipped position
+    public int outSkip(String msg) {
+        outComment(msg);
+        return ins++;
+    }
+
+    public void outJump(int loc, int offset, String msg) {
+        out(loc, "LDA  7,"+offset+"(7)"+"\t"+msg);
+    }
 
     //TODO copy all his prelude code here
     public void prelude() {
         outComment("C-Minus Compilation to TM Code");
         outComment("File: gcd.tm");
         outComment("Standard prelude:");
-        out("0:     LD  6,0(0) 	load gp with maxaddress");
-        out("1:    LDA  5,0(6) 	copy to gp to fp");
-        out("2:     ST  0,0(0) 	clear location 0");
+        out("LD  6,0(0) 	load gp with maxaddress");
+        out("LDA  5,0(6) 	copy to gp to fp");
+        out("ST  0,0(0) 	clear location 0");
         outComment("Jump around i/o routines here");
-        outComment("code for input routine");
-        out("4:     ST  0,-1(5) 	store return");
-        out("5:     IN  0,0,0 	input");
-        out("6:     LD  7,-1(5) 	return to caller");
+        int loc = outSkip("Function input");
+        out("ST  0,-1(5) 	store return");
+        out("IN  0,0,0 	input");
+        out("LD  7,-1(5) 	return to caller");
         outComment("code for output routine");
-        out("7:     ST  0,-1(5) 	store return");
-        out("8:     LD  0,-2(5) 	load output value");
-        out("9:    OUT  0,0,0 	output");
-        out("10:     LD  7,-1(5) 	return to caller");
-        out("3:    LDA  7,7(7) 	jump around i/o code");
+        out("ST  0,-1(5) 	store return");
+        out("LD  0,-2(5) 	load output value");
+        out("OUT  0,0,0 	output");
+        out("LD  7,-1(5) 	return to caller");
+        outJump(loc, ins-loc-1, "Jump around I/O code");
+        //out("3:    LDA  7,7(7) 	jump around i/o code");
         outComment("End of standard prelude.");
     }
 

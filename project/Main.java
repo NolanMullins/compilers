@@ -40,7 +40,7 @@ class Main {
 		try {
 			parser p = new parser(new Lexer(new FileReader(fileName)));
 			Absyn result = (Absyn)(p.parse().value);      
-			if (result != null) {
+			if (result != null && sFlag==1) {
 				SemanticAnalyzer analyzer = new SemanticAnalyzer(sFlag);
 				result.accept(analyzer, 0);
 			}
