@@ -6,8 +6,7 @@ import java.util.*;
 
 public class ASMGenerator implements AbsynVisitor 
 {
-
-    static int sFlag = 1;
+    static int sFlag = 0;
 
     private int depth;
     private ASMDecEntry currFunction = null;
@@ -15,11 +14,13 @@ public class ASMGenerator implements AbsynVisitor
     private ASMUtils asm = null;
     private ASMSymbolTable table = null;
 
+    private String fileName = "";
+
     public ASMGenerator(String fileName) {
         depth = 0;
         asm = new ASMUtils();
         table = new ASMSymbolTable(sFlag);
-        asm.prelude(fileName);
+        this.fileName = fileName;
     }
 
     //Constant definitions
@@ -31,6 +32,25 @@ public class ASMGenerator implements AbsynVisitor
                 System.out.print(" ");
         }
     }
+
+    public void visit(DecList decList, int level) {
+        asm.prelude(fileName);
+
+        while (decList != null && decList.head != null) {
+            decList.head.accept(this, level);
+            decList = decList.tail;
+        }
+
+        asm.end();
+    }
+
+    public void visit(VarDecList varDecList, int level) {
+        while (varDecList != null && varDecList.head != null) {
+            varDecList.head.accept(this, level);
+            varDecList = varDecList.tail;
+        }
+    }
+
 
     public void visit(ExpList expList, int level) {
         while (expList != null && expList.head != null) {
@@ -118,20 +138,6 @@ public class ASMGenerator implements AbsynVisitor
 
     }
 
-    public void visit(VarDecList varDecList, int level) {
-        while (varDecList != null && varDecList.head != null) {
-            varDecList.head.accept(this, level);
-            varDecList = varDecList.tail;
-        }
-    }
-
-    public void visit(DecList decList, int level) {
-        while (decList != null && decList.head != null) {
-            decList.head.accept(this, level);
-            decList = decList.tail;
-        }
-    }
-
     public void visit(ArrayDec arr, int level) {
 
         arr.type.accept(this, ++level);
@@ -157,20 +163,27 @@ public class ASMGenerator implements AbsynVisitor
             System.out.println("");
         currFunction = table.addEntryToTable(dec, dec.func, dec.type.type, depth);
         currFunction.params = new ArrayList<>();
+
+        int loc = asm.buildFunction(dec.func);
+
         //Add parameters to the new block depth
         indent(++depth);
         if (sFlag == 1)
             System.out.println("Params: ");
+
         dec.params.accept(this, ++level);
         indent(depth);
         if (sFlag == 1)
             System.out.println("");
+
         //Store parameter information related to function dec
         VarDecList list = dec.params;
         while (list != null && list.head != null) {
             currFunction.params.add(list.head);
             list = list.tail;
         }
+
+        asm.finishFunction(loc, dec.func);
 
         //leave param depth
         depth--;
