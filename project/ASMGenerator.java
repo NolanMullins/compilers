@@ -9,174 +9,21 @@ public class ASMGenerator implements AbsynVisitor
 
     static int sFlag = 1;
 
-    class DecEntry 
-    {
-        String name; 
-        Dec dec; 
-        int depth;
-        int type;
-        public ArrayList<Dec> params = null;
-        public DecEntry(String name, Dec dec, int depth, int type) 
-        {
-            this.name = name;
-            this.dec = dec;
-            this.depth = depth;
-            this.type = type;
-        }
-        @Override
-        public String toString() {
-            return name+", "+NameTy.types[type]+", "+dec;
-        }
-    }
-
     private int depth;
-    private HashMap<String, ArrayList<DecEntry>> symtable;
-    private DecEntry currFunction = null;
+    private ASMDecEntry currFunction = null;
+
+    private ASMUtils asm = null;
+    private ASMSymbolTable table = null;
 
     public ASMGenerator() {
         depth = 0;
-        symtable = new HashMap<>();
-        prelude();
+        asm = new ASMUtils();
+        table = new ASMSymbolTable(sFlag);
+        asm.prelude();
     }
 
     //Constant definitions
     final static int SPACES = 4;
-
-    //Special registers
-    final static int pc = 7;
-    final static int gp = 6;
-    final static int fp = 5;
-    final static int ac = 0;
-    final static int ac1 = 1;
-
-    //Utility functions
-    private void outComment(String line) {
-        System.out.println("* "+line);
-    }
-
-    private void out(String line) {
-        System.out.println(line);
-    }
-
-
-    //TODO copy all his prelude code here
-    private void prelude() {
-        outComment("C-Minus Compilation to TM Code");
-        outComment("File: gcd.tm");
-        outComment("Standard prelude:");
-        out("0:     LD  6,0(0) 	load gp with maxaddress");
-        out("1:    LDA  5,0(6) 	copy to gp to fp");
-        out("2:     ST  0,0(0) 	clear location 0");
-        outComment("Jump around i/o routines here");
-        outComment("code for input routine");
-        out("4:     ST  0,-1(5) 	store return");
-        out("5:     IN  0,0,0 	input");
-        out("6:     LD  7,-1(5) 	return to caller");
-        outComment("code for output routine");
-        out("7:     ST  0,-1(5) 	store return");
-        out("8:     LD  0,-2(5) 	load output value");
-        out("9:    OUT  0,0,0 	output");
-        out("10:     LD  7,-1(5) 	return to caller");
-        out("3:    LDA  7,7(7) 	jump around i/o code");
-        outComment("End of standard prelude.");
-    }
-
-    
-    private DecEntry addEntryToTable(Dec dec, String name, int type) {
-        indent(depth);
-
-        String decType = "declaration";
-        if (dec instanceof FunctionDec)
-            decType = "function";
-
-        //Check if its already defined
-        if (symtable.containsKey(name) && symtable.get(name).size() > 0) {
-            ArrayList<DecEntry> list = symtable.get(name);
-            if (list.get(list.size()-1).depth == depth) {
-                //Redefinition error
-                System.out.println("[ERROR] Redefined "+decType+": " + name + " [row: "+dec.row + " col: "+dec.col+"]");
-                return null;
-            }
-        }
-
-        //Output declaration msg if the -s was set
-        if (sFlag == 1) {
-            if (dec instanceof FunctionDec)
-                System.out.println("Function declaration: "+name);
-            else
-                System.out.println(name+": "+NameTy.types[type]+(dec instanceof ArrayDec ? "*" : ""));
-        }
-
-        //Add declaration to symtable
-        ArrayList<DecEntry> entries;
-        if (symtable.containsKey(name)) {
-            entries = symtable.get(name);
-        } else {
-            entries = new ArrayList<>();
-            symtable.put(name, entries);
-
-        }
-        DecEntry entry = new DecEntry(name, dec, depth, type);
-        entries.add(entry);
-        return entry;
-    }
-
-    private void clearSymTable(int depth) {
-        for (Map.Entry<String, ArrayList<DecEntry>> var : symtable.entrySet()) {
-            DecEntry index = null;
-            for (DecEntry entry : var.getValue()) {
-               if (entry.depth == depth) {
-                   index = entry;
-                   break;
-               }
-            }
-            if (index != null) {
-                var.getValue().remove(index);
-            }
-        }
-    }
-
-    private int getVarType(String name) {
-        if (symtable.containsKey(name)) {
-            ArrayList<DecEntry> list = symtable.get(name);
-            if (list.size() <= 0)
-                return -1;
-            return list.get(list.size()-1).type;
-        }
-        return -1;
-    }
-
-    private String formatParamsString(ArrayList<Dec> args) {
-        String s = "";
-        for (Dec dec : args) {
-            s += NameTy.types[dec.type.type] +(dec instanceof ArrayDec ? "*" : "")+", ";
-        }
-        if (s.length() > 0)
-            return s.substring(0, s.length()-2);
-        return s;
-    }
-
-    private String formatArgsString(ArrayList<Exp> args) {
-        String s = "";
-        for (Exp e : args) {
-            String type;
-            if (e instanceof VarExp) {
-                String varName = ((VarExp)e).value.name;
-                if (symtable.containsKey(varName) && symtable.get(varName).size() > 0) {
-                    Dec dec = symtable.get(varName).get(symtable.get(varName).size()-1).dec;
-                    type = NameTy.types[dec.type.type] +(dec instanceof ArrayDec ? "*" : "");
-                } else {
-                    type = "Undefined";
-                }
-            } else {
-                type = NameTy.types[e.type];
-            }
-            s += type+", ";
-        }
-        if (s.length() > 0)
-            return s.substring(0, s.length()-2);
-        return s;
-    }
 
     private void indent(int level) {
         if (sFlag == 1) {
@@ -196,7 +43,7 @@ public class ASMGenerator implements AbsynVisitor
         level++;
         exp.lhs.accept(this, level);
         exp.rhs.accept(this, level);
-        int lhsType = getVarType(exp.lhs.name);
+        int lhsType = table.getVarType(exp.lhs.name);
         if (lhsType >= 0 && exp.rhs.type >= 0 && lhsType != exp.rhs.type) {
             indent(depth);
             System.out.println("[ERROR] Type mismatch in assignment found ("+NameTy.types[exp.rhs.type]+") expected ("+NameTy.types[lhsType]+") [row: "+exp.row + " col: "+exp.col+"]");
@@ -253,7 +100,7 @@ public class ASMGenerator implements AbsynVisitor
 
     public void visit(VarExp exp, int level) {
         exp.value.accept(this, level);
-        exp.type = getVarType(exp.value.name);
+        exp.type = table.getVarType(exp.value.name);
     }
 
     public void visit(WriteExp exp, int level) {
@@ -289,7 +136,7 @@ public class ASMGenerator implements AbsynVisitor
 
         arr.type.accept(this, ++level);
         //Add var to table
-        addEntryToTable(arr, arr.name, arr.type.type);
+        table.addEntryToTable(arr, arr.name, arr.type.type, depth);
 
         if (arr.size != null)
             arr.size.accept(this, ++level);
@@ -298,7 +145,7 @@ public class ASMGenerator implements AbsynVisitor
     public void visit(SimpleDec dec, int level) {
 
         //Add var to table
-        addEntryToTable(dec, dec.name, dec.type.type);
+        table.addEntryToTable(dec, dec.name, dec.type.type, depth);
         dec.type.accept(this, ++level);
     }
 
@@ -308,7 +155,7 @@ public class ASMGenerator implements AbsynVisitor
         //Add function to table
         if (sFlag == 1)
             System.out.println("");
-        currFunction = addEntryToTable(dec, dec.func, dec.type.type);
+        currFunction = table.addEntryToTable(dec, dec.func, dec.type.type, depth);
         currFunction.params = new ArrayList<>();
         //Add parameters to the new block depth
         indent(++depth);
@@ -344,7 +191,7 @@ public class ASMGenerator implements AbsynVisitor
             exp.exps.accept(this, ++level);
 
         //leave compound block, clear variables defined in scope
-        clearSymTable(depth);
+        table.clearSymTable(depth);
         depth--;
         if (depth > 0 && sFlag == 1) {
             indent(depth);
@@ -370,22 +217,22 @@ public class ASMGenerator implements AbsynVisitor
     }
 
     public void visit(CallExp exp, int level) {
-        if (!symtable.containsKey(exp.func) || symtable.get(exp.func).size() == 0) {
+        if (!table.symtable.containsKey(exp.func) || table.symtable.get(exp.func).size() == 0) {
             indent(depth);
             System.out.println("[ERROR] Undefined function: " + exp.func + " [row: "+exp.row + " col: "+exp.col+"]");
             exp.type = -1;
             return;
-        } else if(!(symtable.get(exp.func).get(symtable.get(exp.func).size()-1).dec instanceof FunctionDec)) {
+        } else if(!(table.symtable.get(exp.func).get(table.symtable.get(exp.func).size()-1).dec instanceof FunctionDec)) {
             indent(depth);
             System.out.println("[ERROR] Function '" + exp.func + "' is a Var [row: "+exp.row + " col: "+exp.col+"]");
             exp.type = -1;
             return;
         }
-        exp.type = getVarType(exp.func);
+        exp.type = table.getVarType(exp.func);
         exp.args.accept(this, ++level);
 
         //Args checking 
-        ArrayList<Dec> params = symtable.get(exp.func).get(0).params;
+        ArrayList<Dec> params = table.symtable.get(exp.func).get(0).params;
         ExpList args = exp.args;
 
         //Check no params
@@ -401,7 +248,7 @@ public class ASMGenerator implements AbsynVisitor
         //Check for correct number of params
         if (params.size() != argsArray.size()) {
             indent(depth);
-            System.out.print("[ERROR] Arguments do not match function expected: "+exp.func+"("+formatParamsString(params)+") got "+exp.func+"("+formatArgsString(argsArray)+")");
+            System.out.print("[ERROR] Arguments do not match function expected: "+exp.func+"("+table.formatParamsString(params)+") got "+exp.func+"("+table.formatArgsString(argsArray)+")");
             System.out.println(" [row: "+exp.row + " col: "+exp.col+"]");
             return;
         }
@@ -418,8 +265,8 @@ public class ASMGenerator implements AbsynVisitor
                 Exp e = argsArray.get(i);
                 if (e instanceof VarExp) {
                     String varName = ((VarExp)e).value.name;
-                    if (symtable.containsKey(varName) && symtable.get(varName).size() > 0) {
-                        if (!(symtable.get(varName).get(symtable.get(varName).size()-1).dec instanceof ArrayDec))
+                    if (table.symtable.containsKey(varName) && table.symtable.get(varName).size() > 0) {
+                        if (!(table.symtable.get(varName).get(table.symtable.get(varName).size()-1).dec instanceof ArrayDec))
                             error = true;
                     } else {
                         error = true;
@@ -428,7 +275,7 @@ public class ASMGenerator implements AbsynVisitor
             }
             if (error) {
                 indent(depth);
-                System.out.print("[ERROR] Arguments do not match function expected: "+exp.func+"("+formatParamsString(params)+") got "+exp.func+"("+formatArgsString(argsArray)+")");
+                System.out.print("[ERROR] Arguments do not match function expected: "+exp.func+"("+table.formatParamsString(params)+") got "+exp.func+"("+table.formatArgsString(argsArray)+")");
                 System.out.println(" [row: "+exp.row + " col: "+exp.col+"]");
                 return;
             }
@@ -445,10 +292,10 @@ public class ASMGenerator implements AbsynVisitor
     }
 
     public void visit(IndexVar var, int level) {
-        if (!symtable.containsKey(var.name) || symtable.get(var.name).size() == 0) {
+        if (!table.symtable.containsKey(var.name) || table.symtable.get(var.name).size() == 0) {
             indent(depth);
             System.out.println("[ERROR] Undefined use of: "+var.name + " [row: "+var.row + " col: "+var.col+"]");
-        } else if(symtable.get(var.name).get(symtable.get(var.name).size()-1).dec instanceof FunctionDec) {
+        } else if(table.symtable.get(var.name).get(table.symtable.get(var.name).size()-1).dec instanceof FunctionDec) {
             indent(depth);
             System.out.println("[ERROR] Var '" + var.name + "' is a function [row: "+var.row + " col: "+var.col+"]");
         }
@@ -461,10 +308,10 @@ public class ASMGenerator implements AbsynVisitor
     }
 
     public void visit(SimpleVar var, int level) {
-        if (!symtable.containsKey(var.name) || symtable.get(var.name).size() == 0) {
+        if (!table.symtable.containsKey(var.name) || table.symtable.get(var.name).size() == 0) {
             indent(depth);
             System.out.println("[ERROR] Undefined use of: "+var.name + " [row: "+var.row + " col: "+var.col+"]");
-        } else if(symtable.get(var.name).get(symtable.get(var.name).size()-1).dec instanceof FunctionDec) {
+        } else if(table.symtable.get(var.name).get(table.symtable.get(var.name).size()-1).dec instanceof FunctionDec) {
             indent(depth);
             System.out.println("[ERROR] Var '" + var.name + "' is a function [row: "+var.row + " col: "+var.col+"]");
         }
