@@ -248,7 +248,7 @@ stmt          ::= exp:e SEMI:s
 /* 20. Simple Expression */
 /* Combined Rule 20 into rule 18*/
 exp           ::= var:v ASSIGN exp:e
-                  {: RESULT = new AssignExp(vleft, vright, v, e); :}
+                  {: RESULT = new AssignExp(vleft, vright, new VarExp(vleft,vright, v), e); :}
               |   simple_exp:s
                   {: RESULT = s; :}
               ;

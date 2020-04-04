@@ -13,6 +13,12 @@ public class ASMSymbolTable
     public ASMSymbolTable(int sFlag)
     {
         symtable = new HashMap<>();
+        FunctionDec input = new FunctionDec(0,0, new NameTy(0, 0, NameTy.INT), "input", null, null);
+        input.address = 4;
+        addEntryToTable(input, "input", NameTy.INT, 0);
+        FunctionDec output = new FunctionDec(0,0, new NameTy(0, 0, NameTy.INT), "output", null, null);
+        output.address = 7;
+        addEntryToTable(output, "output", NameTy.INT, 0);
         this.sFlag = sFlag;
     }
 
@@ -75,6 +81,16 @@ public class ASMSymbolTable
                 var.getValue().remove(index);
             }
         }
+    }
+
+    public ASMDecEntry getVar(String name) {
+        if (symtable.containsKey(name)) {
+            ArrayList<ASMDecEntry> list = symtable.get(name);
+            if (list.size() <= 0)
+                return null;
+            return list.get(list.size()-1);
+        }
+        return null;
     }
 
     public int getVarType(String name) {

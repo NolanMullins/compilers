@@ -67,16 +67,24 @@ public class ASMUtils
         return ins++;
     }
 
-    public void outJump(int loc, int offset, String msg) {
+    public void outJump(int startLoc, int endLoc, String msg) {
+        int offset = endLoc - startLoc - 1;
         //Set PC Reg to PC REG + offset
-        if (loc + offset > ins) {
-            offset = ins - loc;
-        }
-        out(loc, "LDA  "+pc+","+offset+"("+pc+")"+"\t"+msg);
+        /*TODO error checking
+        if (newLoc + offset > ins) {
+            offset = ins - newLoc;
+        }*/
+        out(startLoc, "LDA  "+pc+","+offset+"("+pc+")"+"\t"+msg);
     }
     
     public int newTemp() {
-        return currentFrameOffset++;
+        int tmp = currentFrameOffset;
+        currentFrameOffset -= 1;
+        outRMInstruction("ST", ac, tmp, fp, "op: push tmp left");
+        return tmp;
+    }
+    public void releaseTempVar() {
+        currentFrameOffset++;
     }
     //#endregion
 
@@ -87,13 +95,15 @@ public class ASMUtils
         if (name.equals("main"))
             mainLoc = loc;
         dec.address = loc;
-        currentFrameOffset = 0;
+        //position 0 is ofp
+        //position -1 is ret-addr
+        currentFrameOffset = -2;
         return loc;
     }
     
     public void finishFunction(int loc, String name) {
         outRMInstruction("LD", pc, -1, fp, "return to caller");
-        outJump(loc, ins-loc-1, "Jump around function: "+name);
+        outJump(loc, ins, "Jump around function: "+name);
         outComment("End function: "+name);
     }
 
@@ -102,17 +112,34 @@ public class ASMUtils
         if (depth == GLOBAL_SCOPE) {
             outComment("Processing global var declaration: "+var.name);
             var.offset = globalOffset;
-            globalOffset++;
+            globalOffset--;
             var.nestLevel = 0;
         } else {
             outComment("Processing local var declaration: "+var.name);
             var.offset = currentFrameOffset;
-            currentFrameOffset++;
+            currentFrameOffset--;
             var.nestLevel = 1;
         }
     }
 
-    public void processCallExp(CallExp e) {
+    public void loadSimpleVar(SimpleVar var, ASMDecEntry dec) {
+        if (!(dec.dec instanceof VarDec)) {
+            outComment("Error loading simple var: looking for VarDec, got function dec");
+            return;
+        }
+        VarDec varDec = (VarDec)dec.dec;
+        //Global
+        outComment("Looking up: "+var.name);
+        if (varDec.nestLevel == 0) {
+          outRMInstruction("LDA", ac, varDec.offset, gp, "load id value");
+        }
+        else //Local
+        {
+          outRMInstruction("LDA", ac, varDec.offset, fp, "load id value");
+        }
+    }
+
+    public void processCallExp(CallExp e, FunctionDec func, int depth) {
         //Code to compute first arg
         //ST ac, frameoffset+initFO (fp)
         //Code to compute second arg
@@ -128,6 +155,41 @@ public class ASMUtils
         //LDA pc, ... (pc)
         //pop current frame
         //LD fp, ofpFO (FP)
+
+        outComment("-> call of function: " + e.func);
+
+        /*int oldFlag = flag;
+        flag = CALL;*/
+
+        int frameStart = currentFrameOffset;
+
+        currentFrameOffset -= 2;
+
+        //TODO handle args by pushing on to stack
+        /*f(e.args != null)
+            e.args.accept(this, depth);*/
+
+        //Def func = getFuncDef(exp.func);
+
+        if(func != null) {
+            outRMInstruction("ST", fp, frameStart, fp, "push ofp");
+            outRMInstruction("LDA", fp, frameStart, fp, "push frame");
+            outRMInstruction("LDA", ac, 1, pc, "load ac with ret ptr");
+            //Todo get function location
+            outJump(ins, func.address, "Jump to function location");
+            //emitRM_Abs("LDA", pc, func.lineNum,"jump to function location");
+            outRMInstruction("LD", fp, 0, fp, "pop frame");
+        }
+        else
+        {
+            //report_error(exp.row, exp.col, "function: " + exp.func + " not found");
+        }
+
+        currentFrameOffset = frameStart;
+
+        //flag = oldFlag;
+
+        outComment("<- call");
     }
 
 
@@ -139,19 +201,32 @@ public class ASMUtils
         //LD pc, retFO (fp)
     }
 
-    //TODO will need a way to pass in value to assign to, probably should pass in a reg number
-    public void processAssignExp(AssignExp e, int depth) {
-        //Need to handle left hand side
-        outComment("looking up id: "+e.lhs.name);
-        /*
-        outRMInstruction("LDA", ac, d, s, comment);
-        //will use fp for local dec and gp for global var
-        LDA  0,-3(fp) 	load id address
-        * <- id
-        ST  0,-4(fp) 	op: push lef
-        */
+    public void processConstant(IntExp e) {
+        outComment("Load constant: "+e.value);
+        outRMInstruction("LDC", ac, e.value, ac, "load constant");
 
-        //Handle right side
+    }
+
+    public void processResultAssignExp(int tmpOffset) {
+        outRMInstruction("LD", ac1, tmpOffset, fp, "op: load left");
+        outRMInstruction("ST", ac, 0, ac1, "assign: store value");
+    }
+
+    public void processResultTmpOpExp(OpExp e, int tmpOffset) {
+        outRMInstruction("LD", ac1, tmpOffset, fp, "op: load left");
+
+        outR0Instruction(getASMExpCode(e.op), ac, ac1, ac, "op " + getOpString(e.op));
+
+        //Need to check if this exp is in an if stmt or while stmt
+        if (1==2) {
+            /*
+            asm.outR0Instruction(getRO(exp.op), ac, 2, pc, "br if true");
+            asm.outRMInstruction("LDC", ac, 0, 0, "false case");
+            asm.outRMInstruction("LDA", pc, 1, pc, "unconditional jump");
+            asm.outRMInstruction("LDC", ac, 1, 0, "true case"); 
+            */
+        }
+
     }
     //#endregion
 
@@ -178,23 +253,22 @@ public class ASMUtils
         outR0Instruction("OUT", 0, 0, 0, "output");
         outR0Instruction("LD", pc, -1, fp, "return to caller");
 
-        outJump(loc, ins-loc-1, "Jump around I/O code");
+        outJump(loc, ins, "Jump around I/O code");
 
         outComment("End of standard prelude.");
     }
 
     public void end() {
         //Will need to get the global offset
-        outRMInstruction("ST", fp, -globalOffset, fp, "push ofp");
-        outRMInstruction("LDA", fp, -globalOffset, fp, "push frame");
+        outRMInstruction("ST", fp, globalOffset, fp, "push ofp");
+        outRMInstruction("LDA", fp, globalOffset, fp, "push frame");
         outRMInstruction("LDA", ac, 1, pc, "load ac with ret ptr");
         outRMInstruction("LDA", pc, -(ins-mainLoc-1), pc, "jump to main location");
         outRMInstruction("LD", fp, 0, fp, "pop frame");
         outR0Instruction("HALT", 0, 0, 0, "End");
     }
 
-    public String getASMOpCode(int op)
-    {
+    public String getASMOpCode(int op) {
         switch(op) {
         case OpExp.PLUS:
             return "ADD";
@@ -220,9 +294,25 @@ public class ASMUtils
             return "Error getting operator asm code";
         }
     }
+
+    //If the code is a boolean expression well do a subtraction in prep for a jump
+    public String getASMExpCode(int op) {
+        switch(op)
+        {
+        case OpExp.PLUS:
+            return "ADD";
+        case OpExp.MINUS:
+            return "SUB";
+        case OpExp.MUL:
+            return "MUL";
+        case OpExp.DIV:
+            return "DIV";
+        default:
+            return "SUB";
+        }
+    }
     
-    public String getOpString(int op)
-    {
+    public String getOpString(int op) {
         switch(op) {
         case OpExp.PLUS:
             return "+";

@@ -53,13 +53,16 @@ public class ASMGenerator implements AbsynVisitor
 
     //TODO
     //Call gen code for exp in the list
+    //Maybe not, makes more sense to use existing tree traversal
     public void visit(ExpList expList, int level) {
         while (expList != null && expList.head != null) {
             expList.head.accept(this, level);
+            //genCode(expList.head);
             expList = expList.tail;
         }
     }
 
+    //TODO Delete This
     //TODO slides 10-CodeGeneration, slide 6-12, 10-12 has a little more info on future work needed
     //TODO implement each section here
     void genCode(Exp tree ) {        // newtemp() returns a new name such as t1, t2, etc.
@@ -74,36 +77,43 @@ public class ASMGenerator implements AbsynVisitor
                 codestr+= tree.tempAddr+ " = " + left.tempAddr+ "+" + right.tempAddr;
                 //emitCode( codestr);
             } else if( tree instanceof AssignExp) {
-                Var left = ((AssignExp)tree).lhs;
+                VarExp left = ((AssignExp)tree).lhs;
                 Exp right = ((AssignExp)tree).rhs;
                 genCode(right);
-                //TODO not sure about this part, hes generating a tmp addr for a var, in theory shouldnt we just look up that var addr?
-                //tree.tempAddr = left.tempAddr;
-                //codestr += tree.lhs.temp + "=" + tree.rhs.temp;
+                tree.tempAddr = left.tempAddr;
+                codestr += left.tempAddr + "=" + right.tempAddr;
                 //emitCode( codestr);
-            } else if( tree instanceof VarExp) {
+            } else if(tree instanceof VarExp) {
+                //Moved into visit var exp
+                VarExp e = (VarExp)tree;
                 //TODO
-                //If index var
+                if (e.value instanceof IndexVar) {
                     //need to do work
-                //Else
-                    //do nothing 
-            } else if( tree instanceof IntExp) {
+                } else if (e.value instanceof SimpleVar) {
+                    asm.loadSimpleVar((SimpleVar)e.value, table.getVar(e.value.name));
+                }
+            } else if(tree instanceof IntExp) {
                 // do nothing 
             } else 
                 asm.outComment("Error");
         }
     }
 
-
     public void visit(AssignExp exp, int level) {
         level++;
+        asm.outComment("-> op");
         exp.lhs.accept(this, level);
+
+        int tmpVar = asm.newTemp();
+
         exp.rhs.accept(this, level);
-        int lhsType = table.getVarType(exp.lhs.name);
-        if (lhsType >= 0 && exp.rhs.type >= 0 && lhsType != exp.rhs.type) {
-            indent(depth);
-            System.out.println("[ERROR] Type mismatch in assignment found ("+NameTy.types[exp.rhs.type]+") expected ("+NameTy.types[lhsType]+") [row: "+exp.row + " col: "+exp.col+"]");
-        }
+
+        //get result expression into temp
+        asm.processResultAssignExp(tmpVar);
+
+        asm.releaseTempVar();
+
+        asm.outComment("<- op");
     }
 
     public void visit(IfExp exp, int level) {
@@ -126,27 +136,19 @@ public class ASMGenerator implements AbsynVisitor
 
     public void visit(OpExp exp, int level) {
 
+        asm.outComment("-> op");
         exp.left.accept(this, level);
+
+        int tmpVar = asm.newTemp();
+
         exp.right.accept(this, level);
 
-        //If expression var have been defined and their types do not match
-        if (exp.left.type >= 0 && exp.right.type >= 0 && exp.left.type != exp.right.type) {
-            indent(depth);
-            System.out.println("[ERROR] Type mismatch around operator, found ("+NameTy.types[exp.left.type]+") "+OpExp.operators[exp.op]+" ("+NameTy.types[exp.right.type]+") [row: "+exp.row + " col: "+exp.col+"]");
-            exp.type = -1;
-        } else if (exp.left.type >= 0 && exp.right.type >= 0) {
-            //Check if boolean operator (Need int on both sides)
-            if (exp.op > 3 && exp.left.type == NameTy.VOID) {
-                indent(depth);
-                System.out.println("[ERROR] Boolean operation must be between INT not VOID [row: "+exp.row + " col: "+exp.col+"]");
-                exp.type = -1;
-            } else {
-                exp.type = exp.left.type;
-            }
-        } else {
-            exp.type = -1;
-        }
+        //get result expression into temp
+        asm.processResultTmpOpExp(exp, tmpVar);
 
+        asm.releaseTempVar();
+
+        asm.outComment("<- op");
     }
 
     public void visit(RepeatExp exp, int level) {
@@ -157,6 +159,12 @@ public class ASMGenerator implements AbsynVisitor
     public void visit(VarExp exp, int level) {
         exp.value.accept(this, level);
         exp.type = table.getVarType(exp.value.name);
+        //TODO
+        if (exp.value instanceof IndexVar) {
+            //need to do work
+        } else if (exp.value instanceof SimpleVar) {
+            asm.loadSimpleVar((SimpleVar)exp.value, table.getVar(exp.value.name));
+        }
     }
 
     public void visit(WriteExp exp, int level) {
@@ -266,73 +274,15 @@ public class ASMGenerator implements AbsynVisitor
     }
 
     public void visit(CallExp exp, int level) {
-        if (!table.symtable.containsKey(exp.func) || table.symtable.get(exp.func).size() == 0) {
-            if (exp.func.toString().equals("input") || exp.func.toString().equals("output"))
-                return;
-            System.out.println(exp.func.toString());
-            System.out.println(exp.func.toString().equals("input"));
-            indent(depth);
-            System.out.println("[ERROR] Undefined function: " + exp.func + " [row: "+exp.row + " col: "+exp.col+"]");
-            exp.type = -1;
-            return;
-        } else if(!(table.symtable.get(exp.func).get(table.symtable.get(exp.func).size()-1).dec instanceof FunctionDec)) {
-            indent(depth);
-            System.out.println("[ERROR] Function '" + exp.func + "' is a Var [row: "+exp.row + " col: "+exp.col+"]");
-            exp.type = -1;
+        //Assume no errors
+        ASMDecEntry asmDec = table.getVar(exp.func);
+        if (!(asmDec.dec instanceof FunctionDec)) {
+            System.out.println("Error needed function, got something else");
             return;
         }
         exp.type = table.getVarType(exp.func);
+        asm.processCallExp(exp, (FunctionDec)asmDec.dec, depth);
         exp.args.accept(this, ++level);
-
-        //Args checking 
-        ArrayList<Dec> params = table.symtable.get(exp.func).get(0).params;
-        ExpList args = exp.args;
-
-        //Check no params
-        if (params.size() == 0 && args.head == null)
-            return;
-
-        ArrayList<Exp> argsArray = new ArrayList<>();
-        while (args != null && args.head != null) {
-            argsArray.add(args.head);
-            args = args.tail;
-        }
-
-        //Check for correct number of params
-        if (params.size() != argsArray.size()) {
-            indent(depth);
-            System.out.print("[ERROR] Arguments do not match function expected: "+exp.func+"("+table.formatParamsString(params)+") got "+exp.func+"("+table.formatArgsString(argsArray)+")");
-            System.out.println(" [row: "+exp.row + " col: "+exp.col+"]");
-            return;
-        }
-
-        //Check if args match param types
-        for (int i = 0; i < params.size(); i++) {
-            boolean error = false;
-            //Check if types dont match
-            if (params.get(i).type.type != argsArray.get(i).type) {
-                error = true;
-            }
-            //Check for arrays
-            else if (params.get(i) instanceof ArrayDec) {
-                Exp e = argsArray.get(i);
-                if (e instanceof VarExp) {
-                    String varName = ((VarExp)e).value.name;
-                    if (table.symtable.containsKey(varName) && table.symtable.get(varName).size() > 0) {
-                        if (!(table.symtable.get(varName).get(table.symtable.get(varName).size()-1).dec instanceof ArrayDec))
-                            error = true;
-                    } else {
-                        error = true;
-                    }
-                }
-            }
-            if (error) {
-                indent(depth);
-                System.out.print("[ERROR] Arguments do not match function expected: "+exp.func+"("+table.formatParamsString(params)+") got "+exp.func+"("+table.formatArgsString(argsArray)+")");
-                System.out.println(" [row: "+exp.row + " col: "+exp.col+"]");
-                return;
-            }
-        }
 
     }
 

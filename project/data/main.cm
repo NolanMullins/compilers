@@ -2,6 +2,6 @@ void main(void)
 {
   int x; int fac;
 
-  /*x = input();*/
+  x = input();
   fac = 1;
 }

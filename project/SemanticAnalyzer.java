@@ -174,7 +174,7 @@ public class SemanticAnalyzer implements AbsynVisitor
         level++;
         exp.lhs.accept(this, level);
         exp.rhs.accept(this, level);
-        int lhsType = getVarType(exp.lhs.name);
+        int lhsType = getVarType(exp.lhs.value.name);
         if (lhsType >= 0 && exp.rhs.type >= 0 && lhsType != exp.rhs.type) {
             indent(depth);
             System.out.println("[ERROR] Type mismatch in assignment found ("+NameTy.types[exp.rhs.type]+") expected ("+NameTy.types[lhsType]+") [row: "+exp.row + " col: "+exp.col+"]");
