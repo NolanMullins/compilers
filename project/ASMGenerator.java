@@ -51,51 +51,11 @@ public class ASMGenerator implements AbsynVisitor
         }
     }
 
-    //TODO
-    //Call gen code for exp in the list
-    //Maybe not, makes more sense to use existing tree traversal
     public void visit(ExpList expList, int level) {
         while (expList != null && expList.head != null) {
             expList.head.accept(this, level);
             //genCode(expList.head);
             expList = expList.tail;
-        }
-    }
-
-    //TODO Delete This
-    //TODO slides 10-CodeGeneration, slide 6-12, 10-12 has a little more info on future work needed
-    //TODO implement each section here
-    void genCode(Exp tree ) {        // newtemp() returns a new name such as t1, t2, etc.
-        String codestr = "";
-        if( tree != null ) {
-            if( tree instanceof OpExp) {
-                Exp left = ((OpExp)tree).left;
-                Exp right = ((OpExp)tree).right;
-                genCode(left);
-                genCode(right);
-                tree.tempAddr = asm.newTemp();      // each node is added with a “temp” string
-                codestr+= tree.tempAddr+ " = " + left.tempAddr+ "+" + right.tempAddr;
-                //emitCode( codestr);
-            } else if( tree instanceof AssignExp) {
-                VarExp left = ((AssignExp)tree).lhs;
-                Exp right = ((AssignExp)tree).rhs;
-                genCode(right);
-                tree.tempAddr = left.tempAddr;
-                codestr += left.tempAddr + "=" + right.tempAddr;
-                //emitCode( codestr);
-            } else if(tree instanceof VarExp) {
-                //Moved into visit var exp
-                VarExp e = (VarExp)tree;
-                //TODO
-                if (e.value instanceof IndexVar) {
-                    //need to do work
-                } else if (e.value instanceof SimpleVar) {
-                    asm.loadSimpleVar((SimpleVar)e.value, table.getVar(e.value.name));
-                }
-            } else if(tree instanceof IntExp) {
-                // do nothing 
-            } else 
-                asm.outComment("Error");
         }
     }
 
@@ -132,6 +92,7 @@ public class ASMGenerator implements AbsynVisitor
 
     public void visit(IntExp exp, int level) {
         exp.type = NameTy.INT;
+        asm.processConstant(exp);
     }
 
     public void visit(OpExp exp, int level) {

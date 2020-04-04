@@ -46,8 +46,6 @@ public class ASMUtils
         System.out.println(ins + ":\t"+line);
     }
 
-
-
     //#region[rgba(150, 10, 10, 0.3)] All instructions are either R0 or RM instructions
     //Slide 3 from TMSim slides
     public void outR0Instruction(String opCode, int r, int s, int t, String comment) {
@@ -202,9 +200,9 @@ public class ASMUtils
     }
 
     public void processConstant(IntExp e) {
-        outComment("Load constant: "+e.value);
+        outComment("-> cosntant: "+e.value);
         outRMInstruction("LDC", ac, e.value, ac, "load constant");
-
+        outComment("<- constant");
     }
 
     public void processResultAssignExp(int tmpOffset) {
