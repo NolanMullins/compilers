@@ -4,6 +4,7 @@ public class FunctionDec extends Dec {
   public String func;
   public VarDecList params;
   public CompoundExp body;
+  public int address;
 
   public FunctionDec( int row, int col, NameTy type, String func, VarDecList params, CompoundExp body ) {
     this.row = row;

@@ -51,13 +51,49 @@ public class ASMGenerator implements AbsynVisitor
         }
     }
 
-
+    //TODO
+    //Call gen code for exp in the list
     public void visit(ExpList expList, int level) {
         while (expList != null && expList.head != null) {
             expList.head.accept(this, level);
             expList = expList.tail;
         }
     }
+
+    //TODO slides 10-CodeGeneration, slide 6-12, 10-12 has a little more info on future work needed
+    //TODO implement each section here
+    void genCode(Exp tree ) {        // newtemp() returns a new name such as t1, t2, etc.
+        String codestr = "";
+        if( tree != null ) {
+            if( tree instanceof OpExp) {
+                Exp left = ((OpExp)tree).left;
+                Exp right = ((OpExp)tree).right;
+                genCode(left);
+                genCode(right);
+                tree.tempAddr = asm.newTemp();      // each node is added with a “temp” string
+                codestr+= tree.tempAddr+ " = " + left.tempAddr+ "+" + right.tempAddr;
+                //emitCode( codestr);
+            } else if( tree instanceof AssignExp) {
+                Var left = ((AssignExp)tree).lhs;
+                Exp right = ((AssignExp)tree).rhs;
+                genCode(right);
+                //TODO not sure about this part, hes generating a tmp addr for a var, in theory shouldnt we just look up that var addr?
+                //tree.tempAddr = left.tempAddr;
+                //codestr += tree.lhs.temp + "=" + tree.rhs.temp;
+                //emitCode( codestr);
+            } else if( tree instanceof VarExp) {
+                //TODO
+                //If index var
+                    //need to do work
+                //Else
+                    //do nothing 
+            } else if( tree instanceof IntExp) {
+                // do nothing 
+            } else 
+                asm.outComment("Error");
+        }
+    }
+
 
     public void visit(AssignExp exp, int level) {
         level++;
@@ -149,9 +185,9 @@ public class ASMGenerator implements AbsynVisitor
     }
 
     public void visit(SimpleDec dec, int level) {
-
         //Add var to table
         table.addEntryToTable(dec, dec.name, dec.type.type, depth);
+        asm.processSimpleDec(dec, depth);
         dec.type.accept(this, ++level);
     }
 
@@ -164,7 +200,7 @@ public class ASMGenerator implements AbsynVisitor
         currFunction = table.addEntryToTable(dec, dec.func, dec.type.type, depth);
         currFunction.params = new ArrayList<>();
 
-        int loc = asm.buildFunction(dec.func);
+        int loc = asm.buildFunction(dec, dec.func);
 
         //Add parameters to the new block depth
         indent(++depth);
@@ -183,12 +219,12 @@ public class ASMGenerator implements AbsynVisitor
             list = list.tail;
         }
 
-        asm.finishFunction(loc, dec.func);
 
         //leave param depth
         depth--;
         dec.body.accept(this, ++level);
         currFunction = null;
+        asm.finishFunction(loc, dec.func);
     }
 
     public void visit(CompoundExp exp, int level) {
