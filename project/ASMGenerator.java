@@ -62,10 +62,12 @@ public class ASMGenerator implements AbsynVisitor
     public void visit(AssignExp exp, int level) {
         level++;
         asm.outComment("-> op");
+        exp.lhs.ldaFlag = true;
         exp.lhs.accept(this, level);
 
         int tmpVar = asm.newTemp();
 
+        exp.rhs.ldaFlag = false;
         exp.rhs.accept(this, level);
 
         //get result expression into temp
@@ -98,10 +100,12 @@ public class ASMGenerator implements AbsynVisitor
     public void visit(OpExp exp, int level) {
 
         asm.outComment("-> op");
+        exp.left.ldaFlag = false;
         exp.left.accept(this, level);
 
         int tmpVar = asm.newTemp();
 
+        exp.right.ldaFlag = false;
         exp.right.accept(this, level);
 
         //get result expression into temp
@@ -124,7 +128,7 @@ public class ASMGenerator implements AbsynVisitor
         if (exp.value instanceof IndexVar) {
             //need to do work
         } else if (exp.value instanceof SimpleVar) {
-            asm.loadSimpleVar((SimpleVar)exp.value, table.getVar(exp.value.name));
+            asm.loadSimpleVar((SimpleVar)exp.value, table.getVar(exp.value.name), exp.ldaFlag);
         }
     }
 
@@ -287,6 +291,7 @@ public class ASMGenerator implements AbsynVisitor
         //exp.args.accept(this, ++level);
         ExpList args = exp.args;
         while (args != null && args.head != null) {
+            //args.head.ldaFlag = true;
             args.head.accept(this, level);
             //Push arg on stack
             //TODO array sizing
@@ -307,19 +312,8 @@ public class ASMGenerator implements AbsynVisitor
     }
 
     public void visit(IndexVar var, int level) {
-        if (!table.symtable.containsKey(var.name) || table.symtable.get(var.name).size() == 0) {
-            indent(depth);
-            System.out.println("[ERROR] Undefined use of: "+var.name + " [row: "+var.row + " col: "+var.col+"]");
-        } else if(table.symtable.get(var.name).get(table.symtable.get(var.name).size()-1).dec instanceof FunctionDec) {
-            indent(depth);
-            System.out.println("[ERROR] Var '" + var.name + "' is a function [row: "+var.row + " col: "+var.col+"]");
-        }
+        //lda flag = false;
         var.index.accept(this, ++level);
-
-        if (var.index.type >= 0 && var.index.type != NameTy.INT) {
-            indent(depth);
-            System.out.println("[ERROR] Index variable not type INT [row: "+var.row + " col: "+var.col+"]");
-        }
     }
 
     public void visit(SimpleVar var, int level) {

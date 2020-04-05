@@ -35,7 +35,7 @@ public class ASMUtils
 
     //Utility functions
     public void outComment(String line) {
-        System.out.println("* "+line);
+        //System.out.println("* "+line);
     }
 
     public void out(String line) {
@@ -122,21 +122,24 @@ public class ASMUtils
         }
     }
 
-    public void loadSimpleVar(SimpleVar var, ASMDecEntry dec) {
+    public void loadSimpleVar(SimpleVar var, ASMDecEntry dec, boolean ldaFlag) {
         if (!(dec.dec instanceof VarDec)) {
             outComment("Error loading simple var: looking for VarDec, got function dec");
             return;
         }
         VarDec varDec = (VarDec)dec.dec;
         //TODO we need logic in order to determine if we use LD or LDA, GG
+        String op = "LD";
+        if (ldaFlag)
+            op = "LDA";
         //Global
         outComment("Looking up: "+var.name);
         if (varDec.nestLevel == 0) {
-            outRMInstruction("LD", ac, varDec.offset, gp, "load id value");
+            outRMInstruction(op, ac, varDec.offset, gp, "load id");
         }
         else //Local
         {
-            outRMInstruction("LD", ac, varDec.offset, fp, "load id value");
+            outRMInstruction(op, ac, varDec.offset, fp, "load id");
         }
     }
 
