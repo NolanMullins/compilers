@@ -29,13 +29,15 @@ public class ASMUtils
     //Next available loc after global frame, basically record memory space used by global var
     private static int globalOffset = 0;
 
-    //This might work, might have to store it in the funcitonDec 
-    //TODO eval above in the future
     private static int currentFrameOffset = 0;
 
-    //Utility functions
+    public int getCurrINS() {
+        return ins;
+    }
+
+    //Utility functions, can change where the output is directed here
     public void outComment(String line) {
-        //System.out.println("* "+line);
+        System.out.println("* "+line);
     }
 
     public void out(String line) {
@@ -65,16 +67,24 @@ public class ASMUtils
         return ins++;
     }
 
-    public void outJump(int startLoc, int endLoc, String msg) {
+    public void outJump(String opCode, int r, int startLoc, int endLoc, String msg) {
         int offset = endLoc - startLoc - 1;
         //Set PC Reg to PC REG + offset
-        /*TODO error checking
-        if (newLoc + offset > ins) {
-            offset = ins - newLoc;
-        }*/
-        out(startLoc, "LDA  "+pc+","+offset+"("+pc+")"+"\t"+msg);
+        out(startLoc, opCode+" "+r+","+offset+"("+pc+")"+"\t"+msg);
         if (startLoc==ins)
             ins++;
+    }
+
+    public void outJump(int startLoc, int endLoc, String msg) {
+        outJump("LDA", pc, startLoc, endLoc, msg);
+    }
+
+    public void outJumpToCurrentINS(int startLoc, String msg) {
+        outJump(startLoc, ins, msg);
+    }
+
+    public void outJumpToCurrentINS(String opCode, int r, int startLoc, String msg) {
+        outJump(opCode, r, startLoc, ins, msg);
     }
     
     public int newTemp() {
@@ -122,15 +132,15 @@ public class ASMUtils
         }
     }
 
-    public void loadSimpleVar(SimpleVar var, ASMDecEntry dec, boolean ldaFlag) {
+    public void loadSimpleVar(SimpleVar var, ASMDecEntry dec, boolean isAddr) {
         if (!(dec.dec instanceof VarDec)) {
             outComment("Error loading simple var: looking for VarDec, got function dec");
             return;
         }
         VarDec varDec = (VarDec)dec.dec;
-        //TODO we need logic in order to determine if we use LD or LDA, GG
+        //TODO we need logic in order to determine if we use LD or LDA, GG, kinda working now
         String op = "LD";
-        if (ldaFlag)
+        if (isAddr)
             op = "LDA";
         //Global
         outComment("Looking up: "+var.name);
@@ -169,22 +179,13 @@ public class ASMUtils
 
         currentFrameOffset -= 2;
 
-        //TODO handle args by pushing on to stack
-        /*f(e.args != null)
-            e.args.accept(this, depth);*/
-        if (e.args != null) {
-            //space for args?
-        }
-
-        //Def func = getFuncDef(exp.func);
+        //args handled by pushArgOnStack()
 
         if(func != null) {
             outRMInstruction("ST", fp, frameStart, fp, "push ofp");
             outRMInstruction("LDA", fp, frameStart, fp, "push frame");
             outRMInstruction("LDA", ac, 1, pc, "load ac with ret ptr");
-            //Todo get function location
             outJump(ins, func.address, "Jump to function location");
-            //emitRM_Abs("LDA", pc, func.lineNum,"jump to function location");
             outRMInstruction("LD", fp, 0, fp, "pop frame");
         }
         else
@@ -223,21 +224,31 @@ public class ASMUtils
         outRMInstruction("ST", ac, 0, ac1, "assign: store value");
     }
 
+    //Builds and operator expressions and puts the result in a tmp var located in the offset
     public void processResultTmpOpExp(OpExp e, int tmpOffset) {
         outRMInstruction("LD", ac1, tmpOffset, fp, "op: load left");
 
         outR0Instruction(getASMExpCode(e.op), ac, ac1, ac, "op " + getOpString(e.op));
 
+        //Might be able to to this in a diff function
         //Need to check if this exp is in an if stmt or while stmt
         if (1==2) {
             /*
-            asm.outR0Instruction(getRO(exp.op), ac, 2, pc, "br if true");
-            asm.outRMInstruction("LDC", ac, 0, 0, "false case");
-            asm.outRMInstruction("LDA", pc, 1, pc, "unconditional jump");
+            asm.outr0instruction(getro(exp.op), ac, 2, pc, "br if true");
+            asm.outrminstruction("ldc", ac, 0, 0, "false case");
+            asm.outrminstruction("lda", pc, 1, pc, "unconditional jump");
             asm.outRMInstruction("LDC", ac, 1, 0, "true case"); 
             */
         }
+    }
 
+    public int processIfJump(OpExp e) {
+        outR0Instruction(getASMOpCode(e.op), ac, 2, pc, "br if true");
+        outRMInstruction("LDC", ac, 0, 0, "false case");
+        outRMInstruction("LDA", pc, 1, pc, "unconditional jump");
+        outRMInstruction("LDC", ac, 1, 0, "true case");
+        int jmpLoc = outSkip("If jump location");
+        return jmpLoc;
     }
     //#endregion
 

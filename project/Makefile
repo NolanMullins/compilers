@@ -28,6 +28,9 @@ test:
 run:
 	java $(CLASSPATH) Main data/main.cm
 
+tm:
+	./TMSimulator/tm TMSimulator/result.tm
+
 run-s:
 	java $(CLASSPATH) Main -s data/semanticTest.cm
 

@@ -80,13 +80,29 @@ public class ASMGenerator implements AbsynVisitor
 
     public void visit(IfExp exp, int level) {
         level++;
-        exp.test.accept(this, level);
 
-        //indent(depth);
-        //System.out.println("Enter if block: ");
+        asm.outComment("-> if");
+        asm.outComment("-> test");
+        //This will build the asm expression but we'll still have to check the result
+        exp.test.accept(this, level);
+        int testLoc = 0;
+        if (exp.test instanceof OpExp)
+            testLoc = asm.processIfJump((OpExp)exp.test);
+        else
+            asm.outComment("Error with if test case, not OpExp");
+        asm.outComment("<- test");
+
         exp.thenpart.accept(this, level);
+        int finishThenLoc = asm.outSkip("Jump to end of if block");
+
+        //If the statement resulted in false we need to jump to the else block
+        asm.outJumpToCurrentINS("JEQ", 0, testLoc, "Jump over then block");
+
         if (exp.elsepart != null)
             exp.elsepart.accept(this, level);
+        
+        asm.outJumpToCurrentINS(finishThenLoc, "Leave then block");
+        asm.outComment("<- if");
 
         //indent(depth);
         //System.out.println("Leaving if block");
@@ -238,7 +254,7 @@ public class ASMGenerator implements AbsynVisitor
         //exp.body.accept(this, ++level);
 
         //Used to help me verify the rest of the stuff 
-        outTemp();
+        //outTemp();
     }
 
     public void outTemp() {
