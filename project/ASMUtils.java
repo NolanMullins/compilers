@@ -38,7 +38,7 @@ public class ASMUtils
         System.out.println("* "+line);
     }
 
-    private void out(String line) {
+    public void out(String line) {
         System.out.println(ins++ + ":\t"+line);
     }
 
@@ -46,7 +46,7 @@ public class ASMUtils
         System.out.println(ins + ":\t"+line);
     }
 
-    //#region[rgba(150, 10, 10, 0.3)] All instructions are either R0 or RM instructions
+    //#region[rgba(150, 10, 10, 0.15)] All instructions are either R0 or RM instructions
     //Slide 3 from TMSim slides
     public void outR0Instruction(String opCode, int r, int s, int t, String comment) {
         out(opCode+"  "+r+","+s+","+t+"\t"+comment);
@@ -73,6 +73,8 @@ public class ASMUtils
             offset = ins - newLoc;
         }*/
         out(startLoc, "LDA  "+pc+","+offset+"("+pc+")"+"\t"+msg);
+        if (startLoc==ins)
+            ins++;
     }
     
     public int newTemp() {
@@ -86,7 +88,7 @@ public class ASMUtils
     }
     //#endregion
 
-    //#region[rgba(50,250,10, 0.1)] High level instruction utils
+    //#region[rgba(90,10,90, 0.1)] High level instruction utils
     public int buildFunction(FunctionDec dec, String name) {
         int loc = outSkip("Function: "+name);
         outRMInstruction("ST", ac, -1, fp, "store return");
@@ -126,14 +128,15 @@ public class ASMUtils
             return;
         }
         VarDec varDec = (VarDec)dec.dec;
+        //TODO we need logic in order to determine if we use LD or LDA, GG
         //Global
         outComment("Looking up: "+var.name);
         if (varDec.nestLevel == 0) {
-          outRMInstruction("LDA", ac, varDec.offset, gp, "load id value");
+            outRMInstruction("LD", ac, varDec.offset, gp, "load id value");
         }
         else //Local
         {
-          outRMInstruction("LDA", ac, varDec.offset, fp, "load id value");
+            outRMInstruction("LD", ac, varDec.offset, fp, "load id value");
         }
     }
 
@@ -166,6 +169,9 @@ public class ASMUtils
         //TODO handle args by pushing on to stack
         /*f(e.args != null)
             e.args.accept(this, depth);*/
+        if (e.args != null) {
+            //space for args?
+        }
 
         //Def func = getFuncDef(exp.func);
 
@@ -188,6 +194,10 @@ public class ASMUtils
         //flag = oldFlag;
 
         outComment("<- call");
+    }
+
+    public void pushArgOnStack(int size) {
+        outRMInstruction("ST", ac, currentFrameOffset-2, fp, "store arg val");
     }
 
 
@@ -249,7 +259,7 @@ public class ASMUtils
         outRMInstruction("ST", ac, -1, fp, "store return");
         outRMInstruction("LD", ac, -2, fp, "load output value");
         outR0Instruction("OUT", 0, 0, 0, "output");
-        outR0Instruction("LD", pc, -1, fp, "return to caller");
+        outRMInstruction("LD", pc, -1, fp, "return to caller");
 
         outJump(loc, ins, "Jump around I/O code");
 
@@ -261,7 +271,7 @@ public class ASMUtils
         outRMInstruction("ST", fp, globalOffset, fp, "push ofp");
         outRMInstruction("LDA", fp, globalOffset, fp, "push frame");
         outRMInstruction("LDA", ac, 1, pc, "load ac with ret ptr");
-        outRMInstruction("LDA", pc, -(ins-mainLoc-1), pc, "jump to main location");
+        outRMInstruction("LDA", pc, -(ins-mainLoc), pc, "jump to main location");
         outRMInstruction("LD", fp, 0, fp, "pop frame");
         outR0Instruction("HALT", 0, 0, 0, "End");
     }
