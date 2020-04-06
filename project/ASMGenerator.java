@@ -250,11 +250,30 @@ public class ASMGenerator implements AbsynVisitor
     }
 
     public void visit(WhileExp exp, int level) {
-        //exp.test.accept(this, ++level);
-        //exp.body.accept(this, ++level);
+        level++;
 
-        //Used to help me verify the rest of the stuff 
-        //outTemp();
+        asm.outComment("-> While");
+        //Record the starting position of the while loop, we'll need to jump back here each iteration
+        int topOfWhile = asm.getCurrINS();
+        //Build the looping expression
+        exp.test.accept(this, level);
+
+        //Check the result of the expression
+        int testLoc = 0;
+        if (exp.test instanceof OpExp)
+            testLoc = asm.processIfJump((OpExp)exp.test);
+        else
+            asm.outComment("Error with if test case, not OpExp");
+
+        exp.body.accept(this, level);
+
+        //At the end of the loop body jump back
+        asm.outJump(asm.getCurrINS(), topOfWhile, "Jump back to test condition");
+
+        //Backpatch a jump over the loop body if the expression resulted in false
+        asm.outJumpToCurrentINS("JEQ", 0, testLoc, "Jump over body");
+
+        asm.outComment("<- While");;
     }
 
     public void outTemp() {

@@ -24,126 +24,64 @@
 * Looking up: x
 13:     LDA  0,-2(5)    load id
 14:     ST  0,-4(5)     op: push tmp left
-* -> call of function: input
-15:     ST  5,-5(5)     push ofp
-16:     LDA  5,-5(5)    push frame
-17:     LDA  0,1(7)     load ac with ret ptr
-18:     LDA 7,-15(7)    Jump to function location
-19:     LD  5,0(5)      pop frame
-* <- call
-20:     LD  1,-4(5)     op: load left
-21:     ST  0,0(1)      assign: store value
-* <- op
-* -> op
-* Looking up: fac
-22:     LDA  0,-3(5)    load id
-23:     ST  0,-4(5)     op: push tmp left
-* -> cosntant: 10
-24:     LDC  0,10(0)    load constant
+* -> cosntant: 0
+15:     LDC  0,0(0)     load constant
 * <- constant
-25:     LD  1,-4(5)     op: load left
-26:     ST  0,0(1)      assign: store value
+16:     LD  1,-4(5)     op: load left
+17:     ST  0,0(1)      assign: store value
 * <- op
-* -> if
-* -> test
+* -> While
 * -> op
-* Looking up: fac
-27:     LD  0,-3(5)     load id
-28:     ST  0,-4(5)     op: push tmp left
-* -> cosntant: 11
-29:     LDC  0,11(0)    load constant
+* Looking up: x
+18:     LD  0,-2(5)     load id
+19:     ST  0,-4(5)     op: push tmp left
+* -> cosntant: 5
+20:     LDC  0,5(0)     load constant
 * <- constant
-30:     LD  1,-4(5)     op: load left
-31:     SUB  0,1,0      op >
+21:     LD  1,-4(5)     op: load left
+22:     SUB  0,1,0      op <
 * <- op
-32:     JGT  0,2,7      br if true
-33:     LDC  0,0(0)     false case
-34:     LDA  7,1(7)     unconditional jump
-35:     LDC  0,1(0)     true case
+23:     JLT  0,2,7      br if true
+24:     LDC  0,0(0)     false case
+25:     LDA  7,1(7)     unconditional jump
+26:     LDC  0,1(0)     true case
 * If jump location
-* <- test
-* -> op
-* Looking up: fac
-37:     LDA  0,-3(5)    load id
-38:     ST  0,-4(5)     op: push tmp left
-* -> cosntant: 99
-39:     LDC  0,99(0)    load constant
-* <- constant
-40:     LD  1,-4(5)     op: load left
-41:     ST  0,0(1)      assign: store value
-* <- op
-* Jump to end of if block
-36:     JEQ 0,6(7)      Jump over then block
-42:     LDA 7,0(7)      Leave then block
-* <- if
-* -> if
-* -> test
 * -> op
 * Looking up: x
-43:     LD  0,-2(5)     load id
-44:     ST  0,-4(5)     op: push tmp left
-* -> cosntant: 10
-45:     LDC  0,10(0)    load constant
-* <- constant
-46:     LD  1,-4(5)     op: load left
-47:     SUB  0,1,0      op >
-* <- op
-48:     JGT  0,2,7      br if true
-49:     LDC  0,0(0)     false case
-50:     LDA  7,1(7)     unconditional jump
-51:     LDC  0,1(0)     true case
-* If jump location
-* <- test
+28:     LDA  0,-2(5)    load id
+29:     ST  0,-4(5)     op: push tmp left
 * -> op
 * Looking up: x
-53:     LDA  0,-2(5)    load id
-54:     ST  0,-4(5)     op: push tmp left
-* -> cosntant: 2
-55:     LDC  0,2(0)     load constant
-* <- constant
-56:     LD  1,-4(5)     op: load left
-57:     ST  0,0(1)      assign: store value
-* <- op
-* Jump to end of if block
-52:     JEQ 0,6(7)      Jump over then block
-* -> op
-* Looking up: x
-59:     LDA  0,-2(5)    load id
-60:     ST  0,-4(5)     op: push tmp left
+30:     LD  0,-2(5)     load id
+31:     ST  0,-5(5)     op: push tmp left
 * -> cosntant: 1
-61:     LDC  0,1(0)     load constant
+32:     LDC  0,1(0)     load constant
 * <- constant
-62:     LD  1,-4(5)     op: load left
-63:     ST  0,0(1)      assign: store value
+33:     LD  1,-5(5)     op: load left
+34:     ADD  0,1,0      op +
 * <- op
-58:     LDA 7,5(7)      Leave then block
-* <- if
+35:     LD  1,-4(5)     op: load left
+36:     ST  0,0(1)      assign: store value
+* <- op
+37:     LDA 7,-20(7)    JumpBack to test condition
+27:     JEQ 0,10(7)     Jump over body
+* <- While
 * Looking up: x
-64:     LD  0,-2(5)     load id
-65:     ST  0,-6(5)     store arg val
+38:     LD  0,-2(5)     load id
+39:     ST  0,-6(5)     store arg val
 * -> call of function: output
-66:     ST  5,-4(5)     push ofp
-67:     LDA  5,-4(5)    push frame
-68:     LDA  0,1(7)     load ac with ret ptr
-69:     LDA 7,-63(7)    Jump to function location
-70:     LD  5,0(5)      pop frame
+40:     ST  5,-4(5)     push ofp
+41:     LDA  5,-4(5)    push frame
+42:     LDA  0,1(7)     load ac with ret ptr
+43:     LDA 7,-37(7)    Jump to function location
+44:     LD  5,0(5)      pop frame
 * <- call
-* Looking up: fac
-71:     LD  0,-3(5)     load id
-72:     ST  0,-6(5)     store arg val
-* -> call of function: output
-73:     ST  5,-4(5)     push ofp
-74:     LDA  5,-4(5)    push frame
-75:     LDA  0,1(7)     load ac with ret ptr
-76:     LDA 7,-70(7)    Jump to function location
-77:     LD  5,0(5)      pop frame
-* <- call
-78:     LD  7,-1(5)     return to caller
-11:     LDA 7,67(7)     Jump around function: main
+45:     LD  7,-1(5)     return to caller
+11:     LDA 7,34(7)     Jump around function: main
 * End function: main
-79:     ST  5,0(5)      push ofp
-80:     LDA  5,0(5)     push frame
-81:     LDA  0,1(7)     load ac with ret ptr
-82:     LDA  7,-71(7)   jump to main location
-83:     LD  5,0(5)      pop frame
-84:     HALT  0,0,0     End
+46:     ST  5,0(5)      push ofp
+47:     LDA  5,0(5)     push frame
+48:     LDA  0,1(7)     load ac with ret ptr
+49:     LDA  7,-38(7)   jump to main location
+50:     LD  5,0(5)      pop frame
+51:     HALT  0,0,0     End

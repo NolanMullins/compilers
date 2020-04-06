@@ -1,19 +1,9 @@
 void main(void) {
     int x; int fac;
-    x = input();
-    fac = 10;
-
-    if (fac > 11) {
-        fac = 99;
+    x = 0;
+    while (x < 5) {
+        x = x + 1;
     }
-
-    if (x > 10) {
-        x = 2;
-    } else {
-        x = 1;
-    }
-
     output(x);
-    output(fac);
 }
 
