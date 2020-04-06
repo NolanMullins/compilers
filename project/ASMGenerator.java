@@ -190,6 +190,7 @@ public class ASMGenerator implements AbsynVisitor
         currFunction.params = new ArrayList<>();
 
         int loc = asm.buildFunction(dec, dec.func);
+        dec.address = loc+1;
 
         //Add parameters to the new block depth
         indent(++depth);
@@ -238,15 +239,10 @@ public class ASMGenerator implements AbsynVisitor
     }
 
     public void visit(ReturnExp e, int level) {
-        if (e.exp != null) {
-            e.exp.accept(this, ++level);
-            if (e.exp.type >= 0 && currFunction.type >= 0 && e.exp.type != currFunction.type) {
-                indent(depth);
-                System.out.println("[ERROR] Return type must be ("+NameTy.types[currFunction.type]+"), found ("+NameTy.types[e.exp.type]+") [row: "+e.exp.row + " col: "+e.exp.col+"]");
-            }
-        } else if (currFunction!= null && currFunction.type != NameTy.VOID) {
-            indent(depth);
-        }
+        asm.outComment("-> return");
+        e.exp.accept(this, level);
+        asm.returnToCaller();
+        asm.outComment("<- return");
     }
 
     public void visit(WhileExp exp, int level) {
@@ -283,6 +279,7 @@ public class ASMGenerator implements AbsynVisitor
             System.out.println("Error needed function, got something else");
             return;
         }
+        int frameStart = asm.startCallExp();
         //exp.args.accept(this, ++level);
         ExpList args = exp.args;
         while (args != null && args.head != null) {
@@ -294,7 +291,7 @@ public class ASMGenerator implements AbsynVisitor
             args = args.tail;
         }
         exp.type = table.getVarType(exp.func);
-        asm.processCallExp(exp, (FunctionDec)asmDec.dec, depth);
+        asm.processCallExp(exp, (FunctionDec)asmDec.dec, depth, frameStart);
 
     }
 

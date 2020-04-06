@@ -1,9 +1,14 @@
-void main(void) {
-    int x; int fac;
-    x = 0;
-    while (x < 5) {
-        x = x + 1;
-    }
+int y;
+
+int add(int x, int y) {
     output(x);
+    output(y);
+    return x+y;
 }
 
+void main(void) {
+  int x;
+  x = input();
+  y = 10;
+  output(add(x,y));
+}

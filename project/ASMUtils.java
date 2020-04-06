@@ -37,7 +37,7 @@ public class ASMUtils
 
     //Utility functions, can change where the output is directed here
     public void outComment(String line) {
-        System.out.println("* "+line);
+        //System.out.println("* "+line);
     }
 
     public void out(String line) {
@@ -153,32 +153,17 @@ public class ASMUtils
         }
     }
 
-    public void processCallExp(CallExp e, FunctionDec func, int depth) {
-        //Code to compute first arg
-        //ST ac, frameoffset+initFO (fp)
-        //Code to compute second arg
-        //ST ac, frameoffset+initFO-1 (fp)
-        
-        //Store current fp
-        //ST fp, frameoffset+ofpFO (fp)
-        //Push new frame
-        //LDA fp, frameoffset (fp)
-        //save return in ac
-        //LDA ac, 1 (pc)
-        //relative jump to function entry
-        //LDA pc, ... (pc)
-        //pop current frame
-        //LD fp, ofpFO (FP)
+    public int startCallExp() {
+        int frameStart = currentFrameOffset;
+        currentFrameOffset-=2;
+        return frameStart;
+    }
+
+    public int processCallExp(CallExp e, FunctionDec func, int depth, int frameStart) {
 
         outComment("-> call of function: " + e.func);
-
-        /*int oldFlag = flag;
-        flag = CALL;*/
-
-        int frameStart = currentFrameOffset;
-
-        currentFrameOffset -= 2;
-
+        //int frameStart = currentFrameOffset;
+        //currentFrameOffset -= 2;
         //args handled by pushArgOnStack()
 
         if(func != null) {
@@ -193,24 +178,25 @@ public class ASMUtils
             //report_error(exp.row, exp.col, "function: " + exp.func + " not found");
         }
 
+        //TODO figure out how tf to handle this
         currentFrameOffset = frameStart;
 
-        //flag = oldFlag;
-
         outComment("<- call");
+        return frameStart;
+    }
+
+    public void finishCallExp(int frameStart) {
+        currentFrameOffset = frameStart;
     }
 
     public void pushArgOnStack(int size) {
-        outRMInstruction("ST", ac, currentFrameOffset-2, fp, "store arg val");
+        outRMInstruction("ST", ac, currentFrameOffset, fp, "store arg val");
+        currentFrameOffset--;
     }
 
 
-    public void processReturnExp(ReturnExp e) {
-        //store return address
-        //ST ac, retFO (fp)
-        //...
-        //return to caller
-        //LD pc, retFO (fp)
+    public void returnToCaller() {
+        outRMInstruction("LD", pc, -1, fp, "return to caller");
     }
 
     public void processConstant(IntExp e) {
@@ -227,23 +213,14 @@ public class ASMUtils
     //Builds and operator expressions and puts the result in a tmp var located in the offset
     public void processResultTmpOpExp(OpExp e, int tmpOffset) {
         outRMInstruction("LD", ac1, tmpOffset, fp, "op: load left");
-
         outR0Instruction(getASMExpCode(e.op), ac, ac1, ac, "op " + getOpString(e.op));
-
-        //Might be able to to this in a diff function
-        //Need to check if this exp is in an if stmt or while stmt
-        if (1==2) {
-            /*
-            asm.outr0instruction(getro(exp.op), ac, 2, pc, "br if true");
-            asm.outrminstruction("ldc", ac, 0, 0, "false case");
-            asm.outrminstruction("lda", pc, 1, pc, "unconditional jump");
-            asm.outRMInstruction("LDC", ac, 1, 0, "true case"); 
-            */
-        }
     }
 
     public int processIfJump(OpExp e) {
-        outR0Instruction(getASMOpCode(e.op), ac, 2, pc, "br if true");
+        if (getASMOpCode(e.op).charAt(0)=='J')
+            outRMInstruction(getASMOpCode(e.op), ac, 2, pc, "br if true");
+        else
+            outR0Instruction(getASMOpCode(e.op), ac, 2, pc, "br if true");
         outRMInstruction("LDC", ac, 0, 0, "false case");
         outRMInstruction("LDA", pc, 1, pc, "unconditional jump");
         outRMInstruction("LDC", ac, 1, 0, "true case");
