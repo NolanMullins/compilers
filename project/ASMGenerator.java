@@ -276,46 +276,6 @@ public class ASMGenerator implements AbsynVisitor
         asm.outComment("<- While");;
     }
 
-    public void outTemp() {
-        asm.outComment("-> while");
-        asm.outComment("while: jump after body comes back here");
-        asm.out("LD  0,-2(5) 	load id value");
-        asm.out("ST  0,-4(5) 	op: push left");
-        asm.out("LDC  0,1(0) 	load const");
-        asm.out("LD  1,-4(5) 	op: load left");
-        asm.out("SUB  0,1,0 	op >");
-        asm.out("JGT  0,2(7) 	br if true");
-        asm.out("LDC  0,0(0) 	false case");
-        asm.out("LDA  7,1(7) 	unconditional jmp");
-        asm.out("LDC  0,1(0) 	true case");
-        asm.outComment("While: jump to end belongs here");
-        asm.outComment(" -> compound statement");
-        asm.outComment(" -> op");
-        asm.outComment("looking up id: fac");
-        asm.outSkip("Space for jump");
-        asm.out("LDA  0,-3(5) 	load id address");
-        asm.out("ST  0,-4(5) 	op: push left");
-        asm.out("LD  0,-3(5) 	load id value");
-        asm.out("ST  0,-5(5) 	op: push left");
-        asm.out("LD  0,-2(5) 	load id value");
-        asm.out("LD  1,-5(5) 	op: load left");
-        asm.out("MUL  0,1,0 	op *");
-        asm.out("LD  1,-4(5) 	op: load left");
-        asm.out("ST  0,0(1) 	assign: store value");
-        asm.out("LDA  0,-2(5) 	load id address");
-        asm.out("ST  0,-4(5) 	op: push left");
-        asm.out("LD  0,-2(5) 	load id value");
-        asm.out("ST  0,-5(5) 	op: push left");
-        asm.out("LDC  0,1(0) 	load const");
-        asm.out("LD  1,-5(5) 	op: load left");
-        asm.out("SUB  0,1,0 	op -");
-        asm.out("LD  1,-4(5) 	op: load left");
-        asm.out("ST  0,0(1) 	assign: store value");
-        asm.out("LDA  7,-29(7) 	while: absolute jmp to test");
-        asm.out(36, "JEQ  0,19(7) 	while: jmp to end");
-        asm.outComment("<- while");
-    }
-
     public void visit(CallExp exp, int level) {
         //Assume no errors
         ASMDecEntry asmDec = table.getVar(exp.func);
