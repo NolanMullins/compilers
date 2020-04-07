@@ -1,0 +1,39 @@
+/* 
+ * More complex c- program with conditions and loops
+ * Demonstrating the complex use of arrays
+ * No Errors
+ * Difficulty: Hard
+*/
+
+/* 
+ * accepts a string of numbers and a section, copies everything from that section into newString
+ */
+void subString(int oldString, int newString, int start, int end)
+{   
+    int loop; int a;
+
+    loop = 0;
+    a = start;
+    while (a < end) {
+        newString[loop] = oldString[a];
+        a = a + 1;
+        a = loop + 1;
+    }
+}
+
+void main(void)
+{
+    int a[5];
+    int x[5];
+    int i;
+
+    i = 0;
+    while (i < 5) {
+        a[i] = i;
+    }
+
+    subString(a, x, 0, 3);
+
+    /* Should output, 0 1 2 3 */
+    output(x);
+}

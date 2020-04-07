@@ -1,3 +1,9 @@
+/* 
+ * Introduction to error handling
+ * Syntax error exist
+ * Difficulty: easy
+*/
+
 /* This program was built to test how far the expressions could go */
 
 /*This is a stripped down version of the invSqrt*/
@@ -8,22 +14,20 @@ int Q_rsqrt( int number )
     int threehalfs;
     threehalfs = 3/2;
 
+    /* ERROR - undefined variable */
+    alpha = 9 - 2;
+
     x2 = number * 1/2;
     y  = number;
-    i  = ( long ) * y;
-    i  = _0x5f3759df - ( i + 1 );
-    y  =  ( float ) * i;
+    i  = 21 - ( i + 1 );
     y  = y * ( threehalfs - ( x2 * y * y ) );
 
     return y;
 }
 
-int invSqrt( int number ) {
-    return 1 / sqrt(number);
-}
-
-/*This function does nothing*/
-void function (int param, int param2) 
+void main(void)
 {
-    return a = array[(thisFunction((a/testVar+(((((((thisHurts + please + make + it + stop[(_ISTHIS/ALLOWED/what/is/happening[rip[cup[file*this[has[to[break[somewhere(hello, this, is, going(10) * to + hurt(one/two))]]]]]]])])))))))))*b)+1/(c[(x*2/3)])] > 10;
+    int a;
+    a = Q_rsqrt(200);
+    return a;
 }

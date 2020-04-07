@@ -1,6 +1,19 @@
-/*Basic c- program with some variables*/
+/* 
+ * Basic c- program with some variables 
+ * No Errors
+ * Difficulty: Easy
+*/
 
 void main(void) {
+    int x; int y; int z;
+
+    x = 1;
+    y = 2;
+    z = 0;
+
     z = x + y * y;
     z = x * y + y;
+
+    /* Should always output 4 */
+    output(z);
 }

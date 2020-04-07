@@ -1,4 +1,7 @@
-/*3.cm has loops, arrays, function calls*/
+/*
+ * Introduces if-else condition in a funciton
+ * Difficulty: Easy
+*/
 
 /* ***************************************
  * Nolan Mullins
@@ -7,47 +10,25 @@
  * cis3150 - A2
  *************************************** */
 
-void thisIsNotAFunction(int rip, int cup) {
-    int x; int y;
-    /*error invalid type*/
-    String test;
+int ifElseFunction(int rip, int cup) {
+    int x; int y; int z;
     x = 10;
     y = 11;
 
-    /*error, declaring variable after expressions*/
-    int z; 
     if (x > y) {
+        output(1);
         z = x;
         return z;
+    } else {
+        output(2);
+        return y;
     }
 }
  
-void error(int msg)
-{    
-	printf(msg);
-	exit(1);
-}
-
-void printBS(int bin[], int len, int n)
-{
-    while (i < len) {
-        print(bin[i]);
-        i = i + 1;
-    }
-    while (i < n) {
-        print(bin[i]);
-        i = i + 1;
-    }
-}
-    
 void main(void) {
+    int result;
+    result = ifElseFunction();
 
-    int x[10];
-    x[0] = 1;
-    x[1] = 0;
-    x[2] = 1;
-    x[3] = 0;
-    
-    print(x, 4, 10);
+    /* Should always output 11 */
+    output(result);
 }
-

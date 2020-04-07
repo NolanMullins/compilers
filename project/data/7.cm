@@ -1,0 +1,15 @@
+/* 
+ * Missing semi colon, as well as undefined functions
+ * Multiple error exists - the compiler is still able to point out all the errors
+ * Difficulty: hard
+*/
+
+void main(void) {
+    int a;
+
+    /* ERROR - missing semi colon */
+    a = 16
+
+    /* ERROR - undefined function called */
+    a = nonExistent(21, 4, 9);
+}

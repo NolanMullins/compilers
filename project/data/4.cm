@@ -1,82 +1,27 @@
-/* A larger cm program, has if statements, more function calls, more complicated expressions  */
-
-/*error, invalid statement following a function declaration*/
-int binTree(int bin, int len, int size, int ones, int max, int m);
-
 /* 
- * accepts a string and a section, copies everything from that section into newString
- */
-void subString(int oldString, int newString, int start, int end)
-{   
-    int loop; int a;
+ * More complex c- program with conditions and loops
+ * No Errors
+ * Difficulty: Easy
+*/
 
-    if (oldString == NULL)
-        return;
-    if (newString == NULL)
-        return;
+/* Print the numbers between start and end */
+void printNumbers(int start, int end) {
+    int p;
 
-
-    loop = 0;
-    a = start;
-    while (a < end) {
-        newString[loop] = oldString[a];
-        a = a + 1;
-        a = loop + 1;
-    }
-}
-
-/*
- * Accepts a string and a character and return the position of the first pos
- */
-int getPos(int start, int string, int search)
-{    
-    int strLen;
-    int a;
-    if (string == NULL)
-    {
-        return 9999;
+    if (start > end) {
+        output(-1);
+    } else if (start == end) {
+        output(start);
     } else {
-        strLen = strlen(string);
-        a = start;
-
-        /*loop through the string*/
-        while (a < strLen) {
-            if (string[a] == search)
-            {
-                return a;
-            }
+        p = start;
+        while (p <= end) {
+            output(p);
+            p = p + 1;
         }
     }
-    return 9999;
 }
 
-/*Accepts a string and the starting point of the number, returns the number attached. Looking back this is horrible LOL */
-int parseNumber(int string, int start)
-{
-    int number[32];
-    int a;
-    int num;
-    int multi;
-    a = start;
-    num = 0;
-    multi = 1;
-    
-    memset(number, 0, 32);
-    
-    /*loop while there is another digit to be read*/
-    while (isdigit(string[a]))
-    {
-        number[a-start] = string[a];
-        a = a + 1;
-    }
-
-    /*reverse their order*/
-    a = a - start-1;
-    while (a >= 0)
-    {
-        num = num + multi*(number[a] - 0);
-        multi = multi * 10;
-        a = a + 1;
-    }
-    return num;
+void main(void) {
+    /* Should always output numbers 0-10 */
+    printNumbers(0,10);
 }

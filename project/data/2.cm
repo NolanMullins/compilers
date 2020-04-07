@@ -1,17 +1,12 @@
-/* This program introduces function calls
- * Show cases a few different types of errors
+/* 
+ * This program introduces function calls
+ * No Errors
+ * Difficulty: Easy
  */
-
-/* A program to compute the factorial value of an integer */
-int x; 
 
 void add (int x, int y) {
     int res;
-    /*error, invalid symbol*/
-    res = 借;
-    res = a + b;
-    /*error, invalid expression / assignment*/
-    res = a + b = b + a;
+    res = x + y;
     return res;
 }
 
@@ -19,16 +14,8 @@ void main(void) {
     int x; 
     int y;
     int z;
-    z = add (x, y);
-    z = add(z,y);
-    add(1,z);
-    return add(10*1, z+8*2);
+    x = add(1, 1);
+    y = add(5, 0);
+    z = add(x, y);
+    output(z);
 }
-
-void add (int x, int y) {
-    int res;
-    res = a + b;
-    res = a = b + a;
-    return res;
-}
-

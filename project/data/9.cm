@@ -1,0 +1,44 @@
+/*
+ * Demonstrates the use of function calls, and manipulation of arrays
+ * Difficulty: Hard
+*/
+
+void printForward(int arr[], int len)
+{
+    int i;
+    i = 0;
+
+    while (i < len) {
+        print(arr[i]);
+        i = i + 1;
+    }
+}
+
+void printBackward(int arr[], int len)
+{
+    int i;
+    i = len - 1;
+
+    while (i >= 0) {
+        print(arr[i]);
+        i = i - 1;
+    }
+}
+    
+void main(void) {
+
+    int x[10];
+    x[0] = 0;
+    x[1] = 1;
+    x[2] = 1;
+    x[3] = 3;
+    x[4] = 4;
+    x[5] = 5;
+    x[6] = 6;
+    x[7] = 7;
+    x[8] = 8;
+    x[9] = 9;
+    
+    printForward(x, 10);
+    printBackward(x, 10);
+}

@@ -1,0 +1,19 @@
+/* 
+ * Syntax error in condition statments
+ * Difficulty: hard
+*/
+
+void main(void) {
+    int a;
+    a = 1;
+
+    /* ERROR - declaring variable after expressions */
+    int z; 
+
+    /* ERROR - syntax error, unexpected token "if else" */
+    if (a == b) {
+        output(a);
+    } if else (b is a) {
+        output(2);
+    } 
+}

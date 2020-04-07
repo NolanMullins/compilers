@@ -1,0 +1,22 @@
+/* 
+ * Introduction to lexical errors
+ * Multiple error exists - the compiler is still able to point out all the errors
+ * Difficulty: medium
+*/
+
+void main(void)
+{
+    int a; int x;
+    a = 21;
+
+    /* ERROR - missing semi colon */
+    output(a)
+
+    x = 0;
+    a = x + 2;
+
+    /* ERROR - missing semi colon */
+    x = a*1
+    output(z);
+}
+
