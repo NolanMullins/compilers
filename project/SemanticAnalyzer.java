@@ -38,6 +38,10 @@ public class SemanticAnalyzer implements AbsynVisitor
 
         depth = 0;
         symtable = new HashMap<>();
+        FunctionDec input = new FunctionDec(0,0, new NameTy(0, 0, NameTy.INT), "input", null, null);
+        addEntryToTable(input, "input", NameTy.INT);
+        FunctionDec output = new FunctionDec(0,0, new NameTy(0, 0, NameTy.INT), "output", null, null);
+        addEntryToTable(output, "output", NameTy.INT);
     }
 
     //His hashtable / symtable: 
@@ -367,7 +371,7 @@ public class SemanticAnalyzer implements AbsynVisitor
         ExpList args = exp.args;
 
         //Check no params
-        if (params.size() == 0 && args.head == null)
+        if (params == null || params.size() == 0 && args.head == null)
             return;
 
         ArrayList<Exp> argsArray = new ArrayList<>();

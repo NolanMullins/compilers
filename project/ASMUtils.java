@@ -37,7 +37,7 @@ public class ASMUtils
 
     //Utility functions, can change where the output is directed here
     public void outComment(String line) {
-        //System.out.println("* "+line);
+        System.out.println("* "+line);
     }
 
     public void out(String line) {
@@ -117,7 +117,6 @@ public class ASMUtils
         outComment("End function: "+name);
     }
 
-    //todo add support for function param? might just be able to use the local var
     public void processSimpleDec(SimpleDec var, int depth) {
         if (depth == GLOBAL_SCOPE) {
             outComment("Processing global var declaration: "+var.name);
@@ -132,7 +131,43 @@ public class ASMUtils
         }
     }
 
-    public void loadSimpleVar(SimpleVar var, ASMDecEntry dec, boolean isAddr) {
+    public void processArrayDec(ArrayDec var, int size, int depth) {
+        if (depth == GLOBAL_SCOPE) {
+            outComment("Processing global var[] declaration: "+var.name);
+            var.offset = globalOffset;
+            globalOffset-=size;
+            var.nestLevel = 0;
+        } else {
+            outComment("Processing local var[] declaration: "+var.name);
+            var.offset = currentFrameOffset;
+            currentFrameOffset-=size;
+            var.nestLevel = 1;
+        }
+    }
+
+    public void verifyArrayAccess(int maxSize) {
+        outRMInstruction("JLT", ac, 1, pc, "Halt if subscript < 0");
+        outRMInstruction("LDA", pc, 1, pc, "Jump over if not");
+        outR0Instruction("HALT", 0, 0, 0, "End (rip)");
+        //TODO check max size
+        //TODO output error
+    }
+
+    public void loadArray(IndexVar var, ASMDecEntry dec, boolean assign, int tmpVar) {
+        //sub offset of base addr
+        //load value using addr stored
+        outRMInstruction("LD", ac1, tmpVar, fp, "load array base addr");
+        outR0Instruction("SUB", ac, ac1, ac, "base is at top of array");
+
+        if(!assign)
+            outRMInstruction("LD", ac, 0, ac, "load value at array index");
+
+        //pop tmp var and other shit off the stack
+        currentFrameOffset = tmpVar;
+
+    }
+
+    public void loadVar(Var var, ASMDecEntry dec, boolean isAddr) {
         if (!(dec.dec instanceof VarDec)) {
             outComment("Error loading simple var: looking for VarDec, got function dec");
             return;

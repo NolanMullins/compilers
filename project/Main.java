@@ -15,9 +15,8 @@ import java.io.*;
 import absyn.*;
 	 
 class Main {
-	public final static boolean SHOW_TREE = false;
 	static public void main(String argv[]) {  
-		
+		boolean SHOW_TREE = false;
 		int sFlag = 0; // Assume the -s was not passed in
 		Boolean generateASM = true;
 		String fileName = "";
@@ -31,6 +30,8 @@ class Main {
 		{
 			if (argv[i].equals("-s")) {
 				sFlag = 1;
+			} else if (argv[i].equals("-a")) {
+				SHOW_TREE = true;
 			} else {
 				fileName = argv[i];
 			}
@@ -40,7 +41,7 @@ class Main {
 		try {
 			parser p = new parser(new Lexer(new FileReader(fileName)));
 			Absyn result = (Absyn)(p.parse().value);      
-			if (result != null && sFlag==1) {
+			if (result != null) {
 				SemanticAnalyzer analyzer = new SemanticAnalyzer(sFlag);
 				result.accept(analyzer, 0);
 			}

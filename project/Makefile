@@ -26,13 +26,16 @@ test:
 	java $(CLASSPATH) Main data/5.cm
 
 run:
-	java $(CLASSPATH) Main data/main.cm
+	java $(CLASSPATH) Main -a data/main.cm 
+
+sort: 
+	java $(CLASSPATH) Main -a TMSimulator/sort.cm 
 
 tm:
 	./TMSimulator/tm TMSimulator/result.tm
 
 run-s:
-	java $(CLASSPATH) Main -s data/semanticTest.cm
+	java $(CLASSPATH) Main -s data/main.cm
 
 sample1:
 	java $(CLASSPATH) Main data/sample1.cm

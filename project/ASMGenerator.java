@@ -62,12 +62,13 @@ public class ASMGenerator implements AbsynVisitor
     public void visit(AssignExp exp, int level) {
         level++;
         asm.outComment("-> op");
-        exp.lhs.ldaFlag = true;
+        exp.lhs.isAddr = true;
+        exp.lhs.isAssign = true;
         exp.lhs.accept(this, level);
 
         int tmpVar = asm.newTemp();
 
-        exp.rhs.ldaFlag = false;
+        exp.rhs.isAddr = false;
         exp.rhs.accept(this, level);
 
         //get result expression into temp
@@ -116,12 +117,12 @@ public class ASMGenerator implements AbsynVisitor
     public void visit(OpExp exp, int level) {
 
         asm.outComment("-> op");
-        exp.left.ldaFlag = false;
+        exp.left.isAddr = false;
         exp.left.accept(this, level);
 
         int tmpVar = asm.newTemp();
 
-        exp.right.ldaFlag = false;
+        exp.right.isAddr = false;
         exp.right.accept(this, level);
 
         //get result expression into temp
@@ -142,9 +143,25 @@ public class ASMGenerator implements AbsynVisitor
         exp.type = table.getVarType(exp.value.name);
         //TODO
         if (exp.value instanceof IndexVar) {
+            IndexVar var = (IndexVar)exp.value;
+            ASMDecEntry dec = table.getVar(var.name);
+            boolean loadAddr = true;
+            if (dec.dec instanceof ArrayDec)
+                if (((ArrayDec)dec.dec).isParam)
+                    loadAddr = false;
+            asm.loadVar(exp.value, dec, loadAddr);
+            //Store addr in tmp
+            int tmp = asm.newTemp();
+            var.index.accept(this, ++level);
+            asm.verifyArrayAccess(0);
+            asm.loadArray(var, dec, exp.isAssign, tmp);
             //need to do work
         } else if (exp.value instanceof SimpleVar) {
-            asm.loadSimpleVar((SimpleVar)exp.value, table.getVar(exp.value.name), exp.ldaFlag);
+            boolean isAddr = exp.isAddr;
+            ASMDecEntry dec = table.getVar(exp.value.name);
+            if (dec.dec instanceof ArrayDec && !((ArrayDec)dec.dec).isParam)
+                isAddr = true;
+            asm.loadVar(exp.value, dec, isAddr);
         }
     }
 
@@ -168,9 +185,16 @@ public class ASMGenerator implements AbsynVisitor
         arr.type.accept(this, ++level);
         //Add var to table
         table.addEntryToTable(arr, arr.name, arr.type.type, depth);
+        if (arr.size == null) {
+            arr.isParam = true;
+            asm.processArrayDec(arr, 1, depth);
+        } else {
+            arr.isParam = false;
+            asm.processArrayDec(arr, arr.size.value, depth);
+        }
 
-        if (arr.size != null)
-            arr.size.accept(this, ++level);
+        //if (arr.size != null)
+            //arr.size.accept(this, ++level);
     }
 
     public void visit(SimpleDec dec, int level) {
@@ -283,10 +307,13 @@ public class ASMGenerator implements AbsynVisitor
         //exp.args.accept(this, ++level);
         ExpList args = exp.args;
         while (args != null && args.head != null) {
-            //args.head.ldaFlag = true;
+            //args.head.isAddr = false;
+            //Passing array value in to function
+            /*if (args.head instanceof VarExp)
+                if (((VarExp)args.head).value instanceof IndexVar)
+                    args.head.isAddr = true;*/
             args.head.accept(this, level);
             //Push arg on stack
-            //TODO array sizing
             asm.pushArgOnStack(1);
             args = args.tail;
         }
@@ -305,16 +332,9 @@ public class ASMGenerator implements AbsynVisitor
 
     public void visit(IndexVar var, int level) {
         //lda flag = false;
-        var.index.accept(this, ++level);
+        //var.index.accept(this, ++level);
     }
 
     public void visit(SimpleVar var, int level) {
-        if (!table.symtable.containsKey(var.name) || table.symtable.get(var.name).size() == 0) {
-            indent(depth);
-            System.out.println("[ERROR] Undefined use of: "+var.name + " [row: "+var.row + " col: "+var.col+"]");
-        } else if(table.symtable.get(var.name).get(table.symtable.get(var.name).size()-1).dec instanceof FunctionDec) {
-            indent(depth);
-            System.out.println("[ERROR] Var '" + var.name + "' is a function [row: "+var.row + " col: "+var.col+"]");
-        }
     }
 }

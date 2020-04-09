@@ -1,14 +1,9 @@
-int y;
-
-int add(int x, int y) {
-    output(x);
-    output(y);
-    return x+y;
+void test (int x[]) {
+    output(x[4]);
 }
 
 void main(void) {
-  int x;
-  x = input();
-  y = 10;
-  output(add(x,y));
+    int x[10];
+    x[4] = 3;
+    test(x);
 }
