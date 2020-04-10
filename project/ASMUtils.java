@@ -2,6 +2,7 @@ import absyn.*;
 
 import java.lang.String;
 import java.util.*;
+import java.io.*;
 
 /* ASM Utils
  * General goal of this class is to abstract the tree traversal and high level generation 
@@ -11,6 +12,7 @@ import java.util.*;
 
 public class ASMUtils
 {
+    PrintWriter printer = null;
     //Constant definitions
     final static int SPACES = 4;
 
@@ -31,32 +33,40 @@ public class ASMUtils
 
     private static int currentFrameOffset = 0;
 
+    public ASMUtils(String fileName) {
+        try {
+            printer = new PrintWriter(fileName.split("\\.")[0]+".tm", "utf-8");
+        } catch (Exception e) {
+            System.out.println(e);
+        }
+    }
+
     public int getCurrINS() {
         return ins;
     }
 
     //Utility functions, can change where the output is directed here
     public void outComment(String line) {
-        System.out.println("* "+line);
+        printer.println("* "+line);
     }
 
     public void out(String line) {
-        System.out.println(ins++ + ":\t"+line);
+        printer.println(ins++ + ": "+line);
     }
 
     public void out(int ins, String line) {
-        System.out.println(ins + ":\t"+line);
+        printer.println(ins + ": "+line);
     }
 
     //#region[rgba(150, 10, 10, 0.15)] All instructions are either R0 or RM instructions
     //Slide 3 from TMSim slides
     public void outR0Instruction(String opCode, int r, int s, int t, String comment) {
-        out(opCode+"  "+r+","+s+","+t+"\t"+comment);
+        out(opCode+" "+r+","+s+","+t+"\t"+comment);
     }
 
     //Slide 4 from TMSim slides
     public void outRMInstruction(String opCode, int r, int d, int s, String comment) {
-        out(opCode+"  "+r+","+d+"("+s+")\t"+comment);
+        out(opCode+" "+r+","+d+"("+s+")\t"+comment);
     }
     //#endregion
 
@@ -300,6 +310,7 @@ public class ASMUtils
         outRMInstruction("LDA", pc, -(ins-mainLoc), pc, "jump to main location");
         outRMInstruction("LD", fp, 0, fp, "pop frame");
         outR0Instruction("HALT", 0, 0, 0, "End");
+        printer.close();
     }
 
     public String getASMOpCode(int op) {

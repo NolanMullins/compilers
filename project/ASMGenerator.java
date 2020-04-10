@@ -18,7 +18,7 @@ public class ASMGenerator implements AbsynVisitor
 
     public ASMGenerator(String fileName) {
         depth = 0;
-        asm = new ASMUtils();
+        asm = new ASMUtils(fileName);
         table = new ASMSymbolTable(sFlag);
         this.fileName = fileName;
     }

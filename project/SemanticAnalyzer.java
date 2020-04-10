@@ -188,6 +188,10 @@ public class SemanticAnalyzer implements AbsynVisitor
     public void visit(IfExp exp, int level) {
         level++;
         exp.test.accept(this, level);
+        if (exp.test.type == NameTy.VOID) {
+            indent(depth);
+            System.out.println("[ERROR] Void expression found in if [row: "+exp.row + " col: "+exp.col+"]");
+        }
 
         //indent(depth);
         //System.out.println("Enter if block: ");
@@ -270,6 +274,9 @@ public class SemanticAnalyzer implements AbsynVisitor
     public void visit(ArrayDec arr, int level) {
 
         arr.type.accept(this, ++level);
+        if (symtable.containsKey(arr.name))
+            if (symtable.get(arr.name).size() > 0 && symtable.get(arr.name).get(symtable.get(arr.name).size()-1).depth == depth)
+                System.out.println("[Error] "+arr.name+" already defined [row: "+arr.row + " col: "+arr.col+"]");
         //Add var to table
         addEntryToTable(arr, arr.name, arr.type.type);
 
@@ -279,6 +286,9 @@ public class SemanticAnalyzer implements AbsynVisitor
 
     public void visit(SimpleDec dec, int level) {
 
+        if (symtable.containsKey(dec.name))
+            if (symtable.get(dec.name).get(symtable.get(dec.name).size()-1).depth == depth)
+                System.out.println("[Error] "+dec.name+" already defined [row: "+dec.row + " col: "+dec.col+"]");
         //Add var to table
         addEntryToTable(dec, dec.name, dec.type.type);
         dec.type.accept(this, ++level);
@@ -348,6 +358,10 @@ public class SemanticAnalyzer implements AbsynVisitor
 
     public void visit(WhileExp exp, int level) {
         exp.test.accept(this, ++level);
+        if (exp.test.type == NameTy.VOID) {
+            indent(depth);
+            System.out.println("[ERROR] Void expression found in while [row: "+exp.row + " col: "+exp.col+"]");
+        }
         exp.body.accept(this, ++level);
     }
 

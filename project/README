@@ -29,8 +29,11 @@ make
 *******
 Running
 *******
-java -classpath /usr/share/java/cup.jar:. <file>
+java -classpath /usr/share/java/cup.jar:. <flags> <file>
 
+-a -> outputs abstract syntax tree
+-s -> outputs symantic analysis results
+-c -> outputs compiled .tm file
 
 **********************************
 Test plan
@@ -43,26 +46,7 @@ was in place we began to increase the complexity of functions
 and assignments. 
 
 Test Cases:
-1.cm
-    - Basic, single line comment
-    - Function and variable declarations
-
-2.cm
-    - Multi-line comments
-    - Multiple functions with parameters
-    - Embedded comments 
-    - Function calls
-
-3.cm
-    - Arrays
-    - If statements
-    - While loops
-
-4.cm
-    - Larger file with more complexity
-
-5.cm
-    - An attempt to kill the expression parsing 
+0-9.cm all contain documented test cases
 
 We also tested our program against the sample files provided.
 

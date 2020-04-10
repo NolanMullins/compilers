@@ -17,8 +17,8 @@ import absyn.*;
 class Main {
 	static public void main(String argv[]) {  
 		boolean SHOW_TREE = false;
+		boolean generateASM = false;
 		int sFlag = 0; // Assume the -s was not passed in
-		Boolean generateASM = true;
 		String fileName = "";
 
 		if (argv.length > 2) {
@@ -32,6 +32,8 @@ class Main {
 				sFlag = 1;
 			} else if (argv[i].equals("-a")) {
 				SHOW_TREE = true;
+			} else if (argv[i].equals("-c")) {
+				generateASM = true;
 			} else {
 				fileName = argv[i];
 			}
